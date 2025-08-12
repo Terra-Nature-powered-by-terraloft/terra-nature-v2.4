@@ -2,10 +2,21 @@
   "name": "terra-nature-v2.4",
   "version": "1.0.0",
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "test": "node --test tests/test_ws_demo_server_js.js && PYTHONPATH=. pytest",
     "prepare": "husky install"
   },
   "dependencies": {
+    "@types/node": "^24.2.1",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "next": "^14.2.31",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.9.2",
     "ws": "^8.17.0"
   },
   "devDependencies": {
