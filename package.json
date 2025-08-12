@@ -2,7 +2,7 @@
   "name": "terra-nature-v2.4",
   "version": "1.0.0",
   "scripts": {
-    "test": "node --test tests/test_ws_demo_server_js.js && pytest"
+    "test": "node --test tests/test_ws_demo_server_js.js && PYTHONPATH=. pytest"
   },
   "dependencies": {
     "ws": "^8.17.0"
