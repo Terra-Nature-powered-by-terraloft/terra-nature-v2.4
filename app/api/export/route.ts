@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       const csvRows = records.map(record => 
         `${record.ts},${record.device},${record.energy_kWh},${record.heat_kWh},${record.proof_id}`
       );
-      const csvContent = [csvHeader, ...csvRows].join('\n');
+      const csvContent = [csvHeader, ...csvRows].join('\n') + '\n';
       
       return new NextResponse(csvContent, {
         status: 200,
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       });
     } else {
       // Generate JSONL (NDJSON)
-      const jsonlContent = records.map(record => JSON.stringify(record)).join('\n');
+      const jsonlContent = records.map(record => JSON.stringify(record)).join('\n') + '\n';
       
       return new NextResponse(jsonlContent, {
         status: 200,
