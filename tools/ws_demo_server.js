@@ -5,7 +5,17 @@ const path = require('path');
 const publicDir = path.join(__dirname, '..', 'public');
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(publicDir, req.url === '/' ? 'dashboard.html' : req.url);
+  // Sanitize the URL to prevent path traversal
+  const requestedPath = req.url === '/' ? 'dashboard.html' : req.url.replace(/^\/+/, '');
+  const normalizedPath = path.normalize(requestedPath);
+  const filePath = path.join(publicDir, normalizedPath);
+
+  // Ensure the resolved path is within publicDir
+  if (!filePath.startsWith(publicDir)) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
+  }
   const ext = path.extname(filePath);
   let contentType = 'text/html';
   if (ext === '.css') contentType = 'text/css';
