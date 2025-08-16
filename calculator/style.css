@@ -1,0 +1,116 @@
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.calculator {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 300px;
+}
+
+.display {
+    margin-bottom: 20px;
+}
+
+.display input {
+    width: 100%;
+    height: 60px;
+    font-size: 24px;
+    text-align: right;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 0 15px;
+    background-color: #333;
+    color: white;
+    box-sizing: border-box;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.buttons button {
+    height: 60px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: #e0e0e0;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.buttons button:hover {
+    background-color: #d0d0d0;
+    transform: translateY(-2px);
+}
+
+.buttons button:active {
+    transform: translateY(0);
+    background-color: #c0c0c0;
+}
+
+/* Operator buttons */
+.buttons button:nth-child(2),
+.buttons button:nth-child(3),
+.buttons button:nth-child(4),
+.buttons button:nth-child(8) {
+    background-color: #ff9500;
+    color: white;
+}
+
+.buttons button:nth-child(2):hover,
+.buttons button:nth-child(3):hover,
+.buttons button:nth-child(4):hover,
+.buttons button:nth-child(8):hover {
+    background-color: #e8890b;
+}
+
+/* Plus button spans 2 rows */
+.plus {
+    grid-row: span 2;
+    background-color: #ff9500 !important;
+    color: white !important;
+}
+
+.plus:hover {
+    background-color: #e8890b !important;
+}
+
+/* Equals button */
+.equals {
+    background-color: #ff9500 !important;
+    color: white !important;
+}
+
+.equals:hover {
+    background-color: #e8890b !important;
+}
+
+/* Zero button spans 2 columns */
+.zero {
+    grid-column: span 2;
+}
+
+/* Clear button */
+.buttons button:first-child {
+    background-color: #a6a6a6;
+    color: white;
+}
+
+.buttons button:first-child:hover {
+    background-color: #999;
+}
