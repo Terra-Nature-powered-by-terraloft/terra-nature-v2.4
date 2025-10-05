@@ -13,6 +13,8 @@ export function useMetrics(): MetricsHookState {
   const [error, setError] = useState<string | null>(null);
   
   const eventSourceRef = useRef<EventSource | null>(null);
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retryAttemptsRef = useRef<number>(0);
   const isComponentMounted = useRef<boolean>(true);
 
   // Function to fetch initial snapshot
@@ -41,12 +43,46 @@ export function useMetrics(): MetricsHookState {
       eventSourceRef.current.close();
     }
 
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+
     try {
       const eventSource = new EventSource('/api/stream');
       eventSourceRef.current = eventSource;
 
+      const resetRetryState = () => {
+        retryAttemptsRef.current = 0;
+        if (retryTimeoutRef.current) {
+          clearTimeout(retryTimeoutRef.current);
+          retryTimeoutRef.current = null;
+        }
+      };
+
+      const scheduleReconnect = () => {
+        if (!isComponentMounted.current) {
+          return;
+        }
+
+        if (retryTimeoutRef.current) {
+          clearTimeout(retryTimeoutRef.current);
+        }
+
+        const attempt = retryAttemptsRef.current;
+        const delay = Math.min(30000, 1000 * Math.pow(2, attempt));
+        retryAttemptsRef.current = attempt + 1;
+
+        retryTimeoutRef.current = setTimeout(() => {
+          if (isComponentMounted.current) {
+            connectToStream();
+          }
+        }, delay);
+      };
+
       eventSource.onopen = () => {
         if (isComponentMounted.current) {
+          resetRetryState();
           setConnected(true);
           setError(null);
         }
@@ -55,31 +91,38 @@ export function useMetrics(): MetricsHookState {
       eventSource.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
-          
+
           if (!isComponentMounted.current) return;
 
           switch (message.type) {
             case 'connected':
+              resetRetryState();
               setConnected(true);
               setError(null);
               break;
-              
+
             case 'metric':
               // Extract metric data (remove type field)
               const { type, ...metricData } = message;
+              resetRetryState();
               setData(metricData as MetricSample);
               setError(null);
               break;
-              
+
             case 'error':
               setError(message.message || 'Stream error occurred');
               break;
-              
+
             case 'close':
               setConnected(false);
               if (message.reason === 'idle_timeout') {
                 setError('Connection closed due to idle timeout');
               }
+              eventSource.close();
+              if (eventSourceRef.current === eventSource) {
+                eventSourceRef.current = null;
+              }
+              scheduleReconnect();
               break;
           }
         } catch (err) {
@@ -90,16 +133,29 @@ export function useMetrics(): MetricsHookState {
       };
 
       eventSource.onerror = () => {
-        if (isComponentMounted.current) {
-          setConnected(false);
-          setError('Stream connection error');
+        if (!isComponentMounted.current) {
+          return;
         }
+
+        eventSource.close();
+        if (eventSourceRef.current === eventSource) {
+          eventSourceRef.current = null;
+        }
+
+        setConnected(false);
+        setError('Stream connection error');
+
+        scheduleReconnect();
       };
 
     } catch (err) {
-      if (isComponentMounted.current) {
-        setError(err instanceof Error ? err.message : 'Failed to connect to stream');
+      if (!isComponentMounted.current) {
+        return;
       }
+
+      setError(err instanceof Error ? err.message : 'Failed to connect to stream');
+
+      scheduleReconnect();
     }
   }, []);
 
@@ -110,6 +166,11 @@ export function useMetrics(): MetricsHookState {
       eventSourceRef.current = null;
     }
     setConnected(false);
+    retryAttemptsRef.current = 0;
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
   }, []);
 
   // Initialize hook - fetch snapshot then upgrade to streaming
@@ -131,6 +192,10 @@ export function useMetrics(): MetricsHookState {
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
     };
   }, [fetchSnapshot, connectToStream]);
 
@@ -141,3 +206,4 @@ export function useMetrics(): MetricsHookState {
     disconnect
   };
 }
+
