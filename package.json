@@ -6,7 +6,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test tests/test_ws_demo_server_js.js && PYTHONPATH=. pytest",
+    "test": "python tools/run_all_tests.py",
     "prepare": "husky install"
   },
   "dependencies": {
