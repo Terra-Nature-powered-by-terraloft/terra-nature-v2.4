@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query, HTTPException, UploadFile, File
+from fastapi import APIRouter, Query, HTTPException, UploadFile, File, Header
 from datetime import datetime
 import json
 
@@ -8,7 +8,9 @@ from .models import (
     MemorySaveRequest, MemoryResponse,
     ErrorResponse, AuditLogEntry
 )
-from ..utils.logging import logger, audit_logger
+from ..utils.logging import logger
+from ..utils.audit import audit_logger
+from ..utils.security import security_manager
 from ..config import config
 from ..core.knowledge_base import kb
 from ..core.memory import memory
@@ -51,7 +53,7 @@ async def health_check():
 # === QUERY ENDPOINT (STUB) ===
 
 @router.post("/query", response_model=QueryResponse)
-async def query(request: QueryRequest):
+async def query(request: QueryRequest, authorization: str = Header(None)):
     """
     Main query endpoint - receives text input and returns expert response
 
@@ -67,6 +69,15 @@ async def query(request: QueryRequest):
     - professorale: Academic validation
     - business: Business Development validation
     """
+
+    # Security-Validierung
+    token = authorization.replace("Bearer ", "") if authorization else None
+    valid, error = security_manager.validate_request(
+        token, request.user, "/query", request.text
+    )
+    if not valid:
+        audit_logger.log_invalid_input("query", error, request.user)
+        raise HTTPException(status_code=400, detail=error)
 
     logger.info(
         "query_received",
