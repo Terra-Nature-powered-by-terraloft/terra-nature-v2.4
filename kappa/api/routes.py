@@ -13,6 +13,7 @@ from ..config import config
 from ..core.knowledge_base import kb
 from ..core.memory import memory
 from ..services.speech import whisper_service
+from ..services.vision import vision_service
 
 router = APIRouter(prefix="/api/kappa", tags=["kappa"])
 
@@ -445,6 +446,135 @@ async def listen_and_query(
     except Exception as e:
         logger.error("listen_and_query_failed", error=str(e))
         raise HTTPException(status_code=500, detail=f"Failed: {str(e)}")
+
+# === VISION ENDPOINTS ===
+
+@router.post("/vision")
+async def analyze_image(
+    image: str = Query(..., min_length=1),
+    prompt: str = Query("Analysiere dieses Bild.", min_length=1),
+    image_type: str = Query("image/png")
+):
+    """
+    Analyze image using Claude Vision API
+
+    Args:
+        image: Base64-encoded image data
+        prompt: Analysis prompt
+        image_type: Image MIME type (image/png, image/jpeg, etc.)
+
+    Returns:
+        Analysis text and confidence score
+    """
+    logger.info("vision_analysis_requested", prompt_length=len(prompt), image_type=image_type)
+
+    try:
+        analysis, confidence = await vision_service.analyze_image(image, prompt, image_type)
+
+        logger.info("vision_analysis_complete", analysis_length=len(analysis), confidence=confidence)
+
+        return {
+            "analysis": analysis,
+            "confidence": confidence,
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
+
+    except Exception as e:
+        logger.error("vision_analysis_failed", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Vision analysis failed: {str(e)}")
+
+@router.post("/vision-dashboard")
+async def analyze_dashboard(
+    image: str = Query(..., min_length=1),
+    context: str = Query(None)
+):
+    """
+    Analyze Terra Nature dashboard screenshot
+
+    Args:
+        image: Base64-encoded dashboard screenshot
+        context: Optional context about what to look for
+
+    Returns:
+        Dashboard analysis with metrics and status
+    """
+    logger.info("dashboard_analysis_requested")
+
+    try:
+        analysis, confidence = await vision_service.analyze_dashboard(image, context)
+
+        logger.info("dashboard_analysis_complete", analysis_length=len(analysis), confidence=confidence)
+
+        return {
+            "analysis": analysis,
+            "confidence": confidence,
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
+
+    except Exception as e:
+        logger.error("dashboard_analysis_failed", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Dashboard analysis failed: {str(e)}")
+
+@router.post("/vision-context")
+async def extract_screenshot_context(image: str = Query(..., min_length=1)):
+    """
+    Extract structured context from screenshot for Kappa responses
+
+    Args:
+        image: Base64-encoded screenshot
+
+    Returns:
+        Extracted context as structured data
+    """
+    logger.info("screenshot_context_requested")
+
+    try:
+        context, confidence = await vision_service.analyze_screenshot_for_context(image)
+
+        logger.info("screenshot_context_complete", context_length=len(context), confidence=confidence)
+
+        return {
+            "context": context,
+            "confidence": confidence,
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
+
+    except Exception as e:
+        logger.error("screenshot_context_failed", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Context extraction failed: {str(e)}")
+
+@router.post("/vision-verify")
+async def verify_technical_claim(
+    image: str = Query(..., min_length=1),
+    claim: str = Query(..., min_length=1)
+):
+    """
+    Verify technical claims against visual evidence from screenshot
+
+    Args:
+        image: Base64-encoded screenshot
+        claim: Technical claim to verify
+
+    Returns:
+        Verification result with reasoning and confidence
+    """
+    logger.info("technical_verification_requested", claim_length=len(claim))
+
+    try:
+        verified, reasoning, confidence = await vision_service.verify_technical_feasibility(image, claim)
+
+        logger.info("technical_verification_complete", verified=verified, confidence=confidence)
+
+        return {
+            "verified": verified,
+            "reasoning": reasoning,
+            "confidence": confidence,
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
+
+    except Exception as e:
+        logger.error("technical_verification_failed", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Verification failed: {str(e)}")
 
 # === SPEAK ENDPOINT (STUB for TTS) ===
 

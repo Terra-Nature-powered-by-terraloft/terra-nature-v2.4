@@ -10,9 +10,9 @@ from pathlib import Path
 
 # Adjust path for imports
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from core.memory import ProjectMemory
+from kappa.core.memory import ProjectMemory
 
 
 @pytest.fixture

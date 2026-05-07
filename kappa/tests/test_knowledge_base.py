@@ -10,10 +10,10 @@ from pathlib import Path
 
 # Adjust path for imports
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from core.knowledge_base import KnowledgeBase
-from utils.database import DatabaseManager
+from kappa.core.knowledge_base import KnowledgeBase
+from kappa.utils.database import DatabaseManager
 
 
 @pytest.fixture

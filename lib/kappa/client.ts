@@ -198,6 +198,137 @@ export class KappaClient {
     return this.request<any>("POST", `/api/kappa/speak?text=${encodeURIComponent(text)}`);
   }
 
+  async analyzeImage(
+    imageBase64: string,
+    prompt: string = "Analysiere dieses Bild.",
+    imageType: string = "image/png"
+  ): Promise<{
+    analysis: string;
+    confidence: number;
+    timestamp: string;
+  }> {
+    const url = `${this.baseUrl}/api/kappa/vision?image=${encodeURIComponent(imageBase64)}&prompt=${encodeURIComponent(prompt)}&image_type=${encodeURIComponent(imageType)}`;
+
+    if (this.debug) {
+      console.log(`[Kappa] POST /api/kappa/vision`, "[Base64 Image]");
+    }
+
+    try {
+      const response = await fetch(url, { method: "GET" });
+
+      if (!response.ok) {
+        throw new Error(`Kappa ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (this.debug) {
+        console.error(`[Kappa] Vision analysis error:`, error);
+      }
+      throw error;
+    }
+  }
+
+  async analyzeDashboard(
+    imageBase64: string,
+    context?: string
+  ): Promise<{
+    analysis: string;
+    confidence: number;
+    timestamp: string;
+  }> {
+    const params = new URLSearchParams({
+      image: imageBase64,
+      ...(context && { context }),
+    });
+
+    const url = `${this.baseUrl}/api/kappa/vision-dashboard?${params}`;
+
+    if (this.debug) {
+      console.log(`[Kappa] POST /api/kappa/vision-dashboard`, "[Base64 Image]");
+    }
+
+    try {
+      const response = await fetch(url, { method: "GET" });
+
+      if (!response.ok) {
+        throw new Error(`Kappa ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (this.debug) {
+        console.error(`[Kappa] Dashboard analysis error:`, error);
+      }
+      throw error;
+    }
+  }
+
+  async extractScreenshotContext(
+    imageBase64: string
+  ): Promise<{
+    context: string;
+    confidence: number;
+    timestamp: string;
+  }> {
+    const url = `${this.baseUrl}/api/kappa/vision-context?image=${encodeURIComponent(imageBase64)}`;
+
+    if (this.debug) {
+      console.log(`[Kappa] POST /api/kappa/vision-context`, "[Base64 Image]");
+    }
+
+    try {
+      const response = await fetch(url, { method: "GET" });
+
+      if (!response.ok) {
+        throw new Error(`Kappa ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (this.debug) {
+        console.error(`[Kappa] Context extraction error:`, error);
+      }
+      throw error;
+    }
+  }
+
+  async verifyTechnicalClaim(
+    imageBase64: string,
+    claim: string
+  ): Promise<{
+    verified: boolean;
+    reasoning: string;
+    confidence: number;
+    timestamp: string;
+  }> {
+    const params = new URLSearchParams({
+      image: imageBase64,
+      claim,
+    });
+
+    const url = `${this.baseUrl}/api/kappa/vision-verify?${params}`;
+
+    if (this.debug) {
+      console.log(`[Kappa] POST /api/kappa/vision-verify`, "[Base64 Image + Claim]");
+    }
+
+    try {
+      const response = await fetch(url, { method: "GET" });
+
+      if (!response.ok) {
+        throw new Error(`Kappa ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (this.debug) {
+        console.error(`[Kappa] Technical verification error:`, error);
+      }
+      throw error;
+    }
+  }
+
   // === HELPER METHODS ===
 
   isEnabled(): boolean {
