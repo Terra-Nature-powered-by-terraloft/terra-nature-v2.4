@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import datetime
 import json
 
-from config import config
+from ..config import config
 
 def setup_logging():
     """Initialize structured logging for Kappa"""

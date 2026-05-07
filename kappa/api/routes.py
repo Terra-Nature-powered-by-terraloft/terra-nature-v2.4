@@ -10,6 +10,8 @@ from api.models import (
 )
 from utils.logging import logger, audit_logger
 from config import config
+from core.knowledge_base import kb
+from core.memory import memory
 
 router = APIRouter(prefix="/api/kappa", tags=["kappa"])
 
@@ -20,18 +22,27 @@ async def health_check():
     """
     Health check endpoint - verifies Kappa system status
     """
+    kb_stats = kb.get_stats()
+    memory_stats = memory.get_memory_stats()
+
     components = {
         "fastapi": "operational",
         "config": "loaded",
         "logging": "operational",
         "audit": "operational" if config.enable_audit else "disabled",
         "mock_mode": "enabled" if config.mock_mode else "disabled",
+        "knowledge_base": "operational",
+        "project_memory": "operational",
     }
 
     return HealthResponse(
         status="healthy",
         timestamp=datetime.utcnow().isoformat() + "Z",
-        components=components
+        components=components,
+        stats={
+            "knowledge_base": kb_stats,
+            "project_memory": memory_stats
+        }
     )
 
 # === QUERY ENDPOINT (STUB) ===
@@ -61,21 +72,44 @@ async def query(request: QueryRequest):
         user=request.user
     )
 
-    # STUB RESPONSE - in Phase 2, this will call the expert engine
-    response_text = f"[STUB] Received in mode '{request.mode}': {request.text}"
+    sources = []
+    confidence = 0.5
+    response_text = None
 
-    if config.mock_mode:
-        # Mock response for testing without API keys
-        if "CO₂" in request.text or "Energie" in request.text or "Wärme" in request.text:
-            response_text = "[MOCK] Kappa verarbeitet MRV-relevante Daten. Spezifische Antwort kommt in Phase 2."
+    # Search knowledge base for relevant concepts
+    search_results = kb.search_concepts(request.text)
+    if search_results:
+        sources.append("knowledge_base")
+        confidence = max(confidence, 0.7)
+        concept_info = []
+        for concept in search_results[:3]:  # Limit to top 3
+            concept_info.append(f"{concept['name']} ({concept['category']}): {concept['definition']}")
+        response_text = "Wissensbank-Treffer:\n" + "\n".join(concept_info)
+
+    # Check project memory for context
+    memory_summary = memory.get_memory_summary()
+    if memory_summary and memory_summary.get("project_status"):
+        sources.append("project_memory")
+        if response_text:
+            response_text += "\n\nProjekt-Status: " + str(memory_summary["project_status"].get("current_phase", "Unbekannt"))
+
+    # Fallback if no knowledge found
+    if not response_text:
+        if config.mock_mode:
+            if "CO₂" in request.text or "Energie" in request.text or "Wärme" in request.text:
+                response_text = "[MOCK] Kappa verarbeitet MRV-relevante Daten. Detaillierte Antwort kommt mit Phase 5 Expert Engine."
+            else:
+                response_text = "[MOCK] Eingabe erkannt. Volle Intelligenz wird in Phase 5 verfügbar."
         else:
-            response_text = "[MOCK] Stub-Antwort. Volle Intelligenz kommt in Phase 2."
+            response_text = f"Keine direkten Treffer für '{request.text}'. Knowledge Base wird kontinuierlich erweitert."
+        sources.append("fallback")
+        confidence = 0.3
 
     result = QueryResponse(
         response=response_text,
         mode=request.mode,
-        confidence=0.5 if config.mock_mode else 0.0,
-        sources=["stub"],
+        confidence=confidence,
+        sources=sources,
         timestamp=datetime.utcnow().isoformat() + "Z",
         requires_approval=False,
         approval_level="approved"
@@ -146,11 +180,11 @@ async def validate(request: ValidationRequest):
 
     return result
 
-# === MEMORY ENDPOINTS (STUB) ===
+# === MEMORY ENDPOINTS ===
 
 @router.post("/memory/save", response_model=MemoryResponse)
 async def save_memory(request: MemorySaveRequest):
-    """Save data to project memory (stub)"""
+    """Save data to project memory"""
 
     logger.info(
         "memory_save",
@@ -159,29 +193,116 @@ async def save_memory(request: MemorySaveRequest):
         user=request.user
     )
 
-    # STUB: Just acknowledge for now
-    return MemoryResponse(
-        key=request.key,
-        value=request.value,
-        category=request.category,
-        timestamp=datetime.utcnow().isoformat() + "Z",
-        user=request.user
-    )
+    try:
+        # Route to appropriate memory manager based on category
+        if request.category == "task":
+            memory.add_task(
+                request.value,
+                priority=request.metadata.get("priority", "medium") if request.metadata else "medium",
+                assigned_to=request.metadata.get("assigned_to") if request.metadata else None
+            )
+        elif request.category == "decision":
+            memory.add_decision(
+                request.value,
+                reason=request.metadata.get("reason", "") if request.metadata else "",
+                decided_by=request.user
+            )
+        elif request.category == "project_status":
+            memory.update_project_status({request.key: request.value})
+        elif request.category == "technical_module":
+            memory.update_technical_module(
+                request.key,
+                request.value,
+                details=request.metadata
+            )
+        elif request.category == "financial":
+            memory.update_financial_data(**request.metadata) if request.metadata else None
+        elif request.category == "stakeholder":
+            memory.add_stakeholder(
+                request.value,
+                role=request.metadata.get("role", "") if request.metadata else ""
+            )
+        elif request.category == "milestone":
+            memory.add_milestone(
+                request.value,
+                target_date=request.metadata.get("target_date", "") if request.metadata else "",
+                description=request.metadata.get("description", "") if request.metadata else ""
+            )
+        else:
+            # Generic audit event
+            memory.record_audit_event(f"memory_save_{request.category}", {
+                "key": request.key,
+                "value": request.value,
+                "metadata": request.metadata
+            })
+
+        return MemoryResponse(
+            key=request.key,
+            value=request.value,
+            category=request.category,
+            timestamp=datetime.utcnow().isoformat() + "Z",
+            user=request.user
+        )
+    except Exception as e:
+        logger.error("memory_save_failed", error=str(e), key=request.key)
+        raise HTTPException(status_code=500, detail=f"Failed to save to memory: {str(e)}")
 
 @router.get("/memory/{key}", response_model=MemoryResponse)
 async def get_memory(key: str = Query(..., min_length=1)):
-    """Retrieve data from project memory (stub)"""
+    """Retrieve data from project memory"""
 
     logger.info("memory_retrieve", key=key)
 
-    # STUB: Return empty for now
-    return MemoryResponse(
-        key=key,
-        value=None,
-        category=None,
-        timestamp=datetime.utcnow().isoformat() + "Z",
-        user="system"
-    )
+    try:
+        # Try to find in project status
+        status = memory.get_project_status()
+        if key in status:
+            return MemoryResponse(
+                key=key,
+                value=status[key],
+                category="project_status",
+                timestamp=datetime.utcnow().isoformat() + "Z",
+                user="system"
+            )
+
+        # Try technical modules
+        tech_modules = memory.get_technical_modules()
+        if key in tech_modules:
+            return MemoryResponse(
+                key=key,
+                value=tech_modules[key],
+                category="technical_module",
+                timestamp=datetime.utcnow().isoformat() + "Z",
+                user="system"
+            )
+
+        # Key not found
+        return MemoryResponse(
+            key=key,
+            value=None,
+            category=None,
+            timestamp=datetime.utcnow().isoformat() + "Z",
+            user="system"
+        )
+    except Exception as e:
+        logger.error("memory_retrieve_failed", error=str(e), key=key)
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve from memory: {str(e)}")
+
+@router.get("/memory-summary")
+async def get_memory_summary():
+    """Get complete project memory summary"""
+
+    logger.info("memory_summary_requested")
+
+    try:
+        summary = memory.get_memory_summary()
+        return {
+            "summary": summary,
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
+    except Exception as e:
+        logger.error("memory_summary_failed", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to get memory summary: {str(e)}")
 
 # === AUDIT LOG ENDPOINT ===
 

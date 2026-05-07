@@ -38,6 +38,7 @@ class MemorySaveRequest(BaseModel):
     value: Any = Field(...)
     category: Optional[str] = Field(default=None)
     user: str = Field(default="system")
+    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional metadata")
 
 # === OUTPUT MODELS ===
 
@@ -47,6 +48,7 @@ class HealthResponse(BaseModel):
     timestamp: str
     version: str = "1.0.0"
     components: Dict[str, str] = Field(default_factory=dict)
+    stats: Optional[Dict[str, Any]] = Field(default=None, description="System statistics")
 
 class QueryResponse(BaseModel):
     """Response to user query"""
