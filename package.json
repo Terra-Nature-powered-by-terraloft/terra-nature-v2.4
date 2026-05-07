@@ -7,7 +7,11 @@
     "start": "next start",
     "lint": "next lint",
     "test": "python tools/run_all_tests.py",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "kappa:start": "python tools/kappa-cli/start_kappa.py",
+    "kappa:start:debug": "python tools/kappa-cli/start_kappa.py --debug",
+    "kappa:start:mock": "python tools/kappa-cli/start_kappa.py --mock",
+    "kappa:test": "pytest kappa/tests/ -v"
   },
   "dependencies": {
     "@types/node": "^24.2.1",
