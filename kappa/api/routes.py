@@ -12,6 +12,7 @@ from ..utils.logging import logger, audit_logger
 from ..config import config
 from ..core.knowledge_base import kb
 from ..core.memory import memory
+from ..core.engine import expert_engine
 from ..services.speech import whisper_service
 from ..services.vision import vision_service
 
@@ -128,7 +129,7 @@ async def query(request: QueryRequest):
 
     return result
 
-# === VALIDATION ENDPOINT (STUB) ===
+# === VALIDATION ENDPOINT ===
 
 @router.post("/validate", response_model=ValidationResponse)
 async def validate(request: ValidationRequest):
@@ -136,15 +137,15 @@ async def validate(request: ValidationRequest):
     Expert validation endpoint - checks statement against expert rules
 
     Validates against multiple expert perspectives:
-    - CTO: Technical reality & feasibility
-    - MRV: Compliance & monitoring capability
-    - Bank: Financial & creditworthiness
-    - Funding: Innovation & grant eligibility
-    - Industrial: Practical utility for operators
-    - IP: Intellectual property & legal
-    - Communication: Message appropriateness
-    - Professorale: Academic rigor
-    - Business: Market & growth potential
+    - professorale: Academic rigor & scientific validity
+    - cto: Technical reality & feasibility (Dr.-Ing.)
+    - mrv: Compliance & monitoring capability
+    - bank: Financial & creditworthiness
+    - funding: Innovation & grant eligibility
+    - industrial: Practical utility for operators
+    - ip: Intellectual property & legal
+    - communication: Message appropriateness
+    - business: Market & growth potential
     """
 
     logger.info(
@@ -154,33 +155,57 @@ async def validate(request: ValidationRequest):
         user=request.user
     )
 
-    # STUB: Return approved for now
-    stub_result = ValidationResult(
-        expert="stub",
-        approved=True,
-        confidence=0.0,
-        feedback="[STUB] Validation framework ready. Actual rules load in Phase 5.",
-        suggestions=["Load expert rules from YAML"],
-        conditions=[]
-    )
+    try:
+        # Get expert validation from engine
+        validation_result = await expert_engine.validate_statement(
+            request.statement,
+            modes=request.modes if request.modes else None,
+            user=request.user
+        )
 
-    result = ValidationResponse(
-        statement=request.statement,
-        timestamp=datetime.utcnow().isoformat() + "Z",
-        results={"stub": stub_result},
-        overall_approved=True,
-        approval_level="conditional",
-        user=request.user
-    )
+        # Convert to response format
+        results = {}
+        for expert_id, opinion in validation_result["expert_opinions"].items():
+            results[expert_id] = ValidationResult(
+                expert=expert_id,
+                approved=opinion["approved"],
+                confidence=opinion["confidence"],
+                feedback=opinion["feedback"],
+                suggestions=opinion["suggestions"],
+                conditions=opinion["conditions"]
+            )
 
-    audit_logger.log_validation(
-        statement=request.statement,
-        mode="stub",
-        result={"approved": True},
-        user=request.user
-    )
+        response = ValidationResponse(
+            statement=request.statement,
+            timestamp=validation_result["timestamp"],
+            results=results,
+            overall_approved=validation_result["overall_approved"],
+            approval_level=validation_result["validation_level"],
+            user=request.user
+        )
 
-    return result
+        # Log validation
+        audit_logger.log_validation(
+            statement=request.statement,
+            mode=request.modes[0] if request.modes else "all",
+            result={
+                "approved": validation_result["overall_approved"],
+                "level": validation_result["validation_level"]
+            },
+            user=request.user
+        )
+
+        logger.info(
+            "validation_complete",
+            approval_level=validation_result["validation_level"],
+            user=request.user
+        )
+
+        return response
+
+    except Exception as e:
+        logger.error("validation_failed", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Validation failed: {str(e)}")
 
 # === MEMORY ENDPOINTS ===
 
