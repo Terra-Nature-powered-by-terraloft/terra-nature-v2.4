@@ -1,17 +1,18 @@
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, UploadFile, File
 from datetime import datetime
 import json
 
-from api.models import (
+from .models import (
     QueryRequest, QueryResponse, HealthResponse,
     ValidationRequest, ValidationResponse, ValidationResult,
     MemorySaveRequest, MemoryResponse,
     ErrorResponse, AuditLogEntry
 )
-from utils.logging import logger, audit_logger
-from config import config
-from core.knowledge_base import kb
-from core.memory import memory
+from ..utils.logging import logger, audit_logger
+from ..config import config
+from ..core.knowledge_base import kb
+from ..core.memory import memory
+from ..services.speech import whisper_service
 
 router = APIRouter(prefix="/api/kappa", tags=["kappa"])
 
@@ -324,15 +325,126 @@ async def get_audit_log(limit: int = Query(100, ge=1, le=1000)):
 
     return entries
 
-# === LISTEN ENDPOINT (STUB for Audio) ===
+# === LISTEN ENDPOINT (Whisper Integration) ===
 
 @router.post("/listen")
-async def listen():
-    """Audio input endpoint (stub for Whisper integration)"""
-    return {
-        "status": "stub",
-        "message": "Audio transcription available in Phase 3 (Whisper integration)"
-    }
+async def listen(audio: UploadFile = File(...), language: str = Query("de", min_length=2, max_length=5)):
+    """
+    Audio input endpoint - transcribes audio to text using Whisper
+
+    Args:
+        audio: Audio file (WAV, MP3, M4A, etc.)
+        language: Language code (de, en, fr, etc.)
+
+    Returns:
+        Transcribed text with confidence score
+    """
+    logger.info("listen_request", filename=audio.filename, content_type=audio.content_type)
+
+    try:
+        # Read audio file
+        audio_bytes = await audio.read()
+        if not audio_bytes:
+            raise HTTPException(status_code=400, detail="Audio file is empty")
+
+        # Transcribe using Whisper
+        transcribed_text, confidence = await whisper_service.transcribe(audio_bytes, language=language)
+
+        logger.info(
+            "listen_transcription_complete",
+            text_length=len(transcribed_text),
+            confidence=confidence
+        )
+
+        return {
+            "text": transcribed_text,
+            "confidence": confidence,
+            "language": language,
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("listen_failed", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
+
+@router.post("/listen-and-query")
+async def listen_and_query(
+    audio: UploadFile = File(...),
+    mode: str = Query("default"),
+    language: str = Query("de"),
+    user: str = Query("system")
+):
+    """
+    Combined endpoint - transcribes audio and returns expert response in one call
+
+    Args:
+        audio: Audio file to transcribe
+        mode: Expert mode for response
+        language: Language of audio
+        user: User identifier
+
+    Returns:
+        Both transcribed text and Kappa's response
+    """
+    logger.info("listen_and_query_request", filename=audio.filename, mode=mode)
+
+    try:
+        # Read and transcribe audio
+        audio_bytes = await audio.read()
+        transcribed_text, transcription_confidence = await whisper_service.transcribe(
+            audio_bytes,
+            language=language
+        )
+
+        # Now run query with transcribed text
+        search_results = kb.search_concepts(transcribed_text)
+        sources = []
+        response_text = None
+        confidence = 0.5
+
+        if search_results:
+            sources.append("knowledge_base")
+            confidence = max(confidence, 0.7)
+            concept_info = []
+            for concept in search_results[:3]:
+                concept_info.append(f"{concept['name']} ({concept['category']}): {concept['definition']}")
+            response_text = "Wissensbank-Treffer:\n" + "\n".join(concept_info)
+
+        memory_summary = memory.get_memory_summary()
+        if memory_summary and memory_summary.get("project_status"):
+            sources.append("project_memory")
+            if response_text:
+                response_text += "\n\nProjekt-Status: " + str(memory_summary["project_status"].get("current_phase", "Unbekannt"))
+
+        if not response_text:
+            response_text = f"Keine Treffer für: {transcribed_text}"
+            sources.append("fallback")
+            confidence = 0.3
+
+        # Log the combined operation
+        audit_logger.log_query(
+            text=transcribed_text,
+            mode=mode,
+            user=user,
+            response=response_text,
+            status="success"
+        )
+
+        return {
+            "transcribed_text": transcribed_text,
+            "transcription_confidence": transcription_confidence,
+            "response": response_text,
+            "response_confidence": confidence,
+            "sources": sources,
+            "mode": mode,
+            "timestamp": datetime.utcnow().isoformat() + "Z"
+        }
+
+    except Exception as e:
+        logger.error("listen_and_query_failed", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed: {str(e)}")
 
 # === SPEAK ENDPOINT (STUB for TTS) ===
 

@@ -30,7 +30,8 @@ export class KappaClient {
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: any
+    body?: any,
+    isFormData: boolean = false
   ): Promise<T> {
     if (!this.enabled) {
       throw new Error("Kappa is disabled");
@@ -39,22 +40,35 @@ export class KappaClient {
     const url = `${this.baseUrl}${endpoint}`;
 
     if (this.debug) {
-      console.log(`[Kappa] ${method} ${endpoint}`, body);
+      console.log(`[Kappa] ${method} ${endpoint}`, isFormData ? "[FormData]" : body);
     }
 
     try {
-      const response = await fetch(url, {
+      const fetchOptions: RequestInit = {
         method,
-        headers: {
+        headers: isFormData ? {} : {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: body ? JSON.stringify(body) : undefined,
-      });
+      };
+
+      if (isFormData) {
+        fetchOptions.body = body;
+      } else if (body) {
+        fetchOptions.body = JSON.stringify(body);
+      }
+
+      const response = await fetch(url, fetchOptions);
 
       if (!response.ok) {
-        const error: ErrorResponse = await response.json();
-        throw new Error(`Kappa ${response.status}: ${error.error}`);
+        let error: ErrorResponse | string;
+        try {
+          error = await response.json();
+        } catch {
+          error = response.statusText;
+        }
+        const errorMsg = typeof error === "string" ? error : error.error || response.statusText;
+        throw new Error(`Kappa ${response.status}: ${errorMsg}`);
       }
 
       const data: T = await response.json();
@@ -91,6 +105,89 @@ export class KappaClient {
 
   async getAuditLog(limit: number = 100): Promise<AuditLogEntry[]> {
     return this.request<AuditLogEntry[]>("GET", `/api/kappa/audit-log?limit=${limit}`);
+  }
+
+  async transcribeAudio(
+    audioBlob: Blob,
+    language: string = "de"
+  ): Promise<{
+    text: string;
+    confidence: number;
+    language: string;
+    timestamp: string;
+  }> {
+    const formData = new FormData();
+    formData.append("audio", audioBlob, "audio.wav");
+    formData.append("language", language);
+
+    const url = `${this.baseUrl}/api/kappa/listen?language=${encodeURIComponent(language)}`;
+
+    if (this.debug) {
+      console.log(`[Kappa] POST /api/kappa/listen`, "[Audio Blob]");
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Kappa ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (this.debug) {
+        console.error(`[Kappa] Transcription error:`, error);
+      }
+      throw error;
+    }
+  }
+
+  async transcribeAndQuery(
+    audioBlob: Blob,
+    mode: string = "default",
+    language: string = "de",
+    user: string = "system"
+  ): Promise<{
+    transcribed_text: string;
+    transcription_confidence: number;
+    response: string;
+    response_confidence: number;
+    sources: string[];
+    mode: string;
+    timestamp: string;
+  }> {
+    const formData = new FormData();
+    formData.append("audio", audioBlob, "audio.wav");
+    formData.append("mode", mode);
+    formData.append("language", language);
+    formData.append("user", user);
+
+    const url = `${this.baseUrl}/api/kappa/listen-and-query?mode=${encodeURIComponent(mode)}&language=${encodeURIComponent(language)}&user=${encodeURIComponent(user)}`;
+
+    if (this.debug) {
+      console.log(`[Kappa] POST /api/kappa/listen-and-query`, "[Audio Blob]");
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Kappa ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (this.debug) {
+        console.error(`[Kappa] Listen-and-query error:`, error);
+      }
+      throw error;
+    }
   }
 
   async listen(): Promise<any> {
