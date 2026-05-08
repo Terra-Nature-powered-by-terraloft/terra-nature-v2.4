@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, Dict, List, Any, Literal
 from datetime import datetime
 
@@ -12,14 +12,16 @@ class QueryRequest(BaseModel):
     ] = Field(default="default", description="Expert mode for validation")
     user: str = Field(default="system", description="User identifier")
     context: Optional[Dict[str, Any]] = Field(default=None, description="Additional context")
-    class Config:
-        schema_extra = {
+
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "text": "Wie viel MRV-relevante Energie wurde heute erfasst?",
                 "mode": "default",
                 "user": "founder"
             }
         }
+    )
 
 class ValidationRequest(BaseModel):
     """Request to validate statement against expert rules"""
@@ -94,9 +96,14 @@ class MemoryResponse(BaseModel):
     user: str
 
 class AuditLogEntry(BaseModel):
-    """Single audit log entry"""
+    """Single audit log entry - flexible schema for append-only audit trail"""
     timestamp: str
-    type: str
+    event_type: str
+    action: str
     user: str
-    status: str
-    data: Dict[str, Any]
+    version: str = "1.0"
+    status: Optional[str] = None
+    # Additional fields that vary by event type
+    data: Optional[Dict[str, Any]] = None
+
+    model_config = ConfigDict(extra="allow")

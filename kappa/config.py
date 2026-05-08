@@ -1,5 +1,6 @@
 import os
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 from typing import Literal
 
 class KappaConfig(BaseSettings):
@@ -31,9 +32,10 @@ class KappaConfig(BaseSettings):
     mock_mode: bool = os.getenv("KAPPA_MOCK_MODE", "false").lower() == "true"
     enable_audit: bool = os.getenv("KAPPA_ENABLE_AUDIT", "true").lower() == "true"
 
-    class Config:
-        env_file = ".env.local"
-        case_sensitive = False
+    model_config = ConfigDict(
+        env_file=".env.local",
+        case_sensitive=False
+    )
 
 # Global config instance
 config = KappaConfig()

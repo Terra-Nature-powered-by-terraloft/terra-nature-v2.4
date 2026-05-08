@@ -1,0 +1,138 @@
+name: Kappa Health Check
+
+on:
+  schedule:
+    # Run health check every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - claude/terra-nature-kappa-assistant-*
+    paths:
+      - 'kappa/main.py'
+      - 'kappa/config.py'
+      - '.github/workflows/kappa-health-check.yml'
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r kappa/requirements.txt
+          pip install fastapi uvicorn httpx
+
+      - name: Start Kappa server
+        run: |
+          python -m uvicorn kappa.main:app --host 127.0.0.1 --port 8000 > server.log 2>&1 &
+          sleep 3
+
+      - name: Check Kappa health endpoint
+        run: |
+          import httpx
+          import sys
+          import json
+
+          try:
+              client = httpx.Client(timeout=10.0)
+              response = client.get("http://127.0.0.1:8000/api/kappa/health")
+              print(f"Status Code: {response.status_code}")
+
+              if response.status_code == 200:
+                  data = response.json()
+                  print(f"Health Status: {data.get('status')}")
+                  print(f"Version: {data.get('version')}")
+                  print(f"Components: {data.get('components')}")
+
+                  if data.get('status') in ['healthy', 'degraded']:
+                      print("✅ Kappa health check PASSED")
+                      sys.exit(0)
+                  else:
+                      print("❌ Kappa health check FAILED: Unhealthy status")
+                      sys.exit(1)
+              else:
+                  print(f"❌ Health endpoint returned {response.status_code}")
+                  sys.exit(1)
+          except Exception as e:
+              print(f"❌ Health check failed: {e}")
+              sys.exit(1)
+        shell: python
+
+      - name: Test Kappa query endpoint
+        run: |
+          import httpx
+          import sys
+
+          try:
+              client = httpx.Client(timeout=10.0)
+              response = client.post(
+                  "http://127.0.0.1:8000/api/kappa/query",
+                  json={"text": "Test query", "mode": "default"}
+              )
+              print(f"Status Code: {response.status_code}")
+
+              if response.status_code in [200, 422]:
+                  print("✅ Kappa query endpoint PASSED")
+                  sys.exit(0)
+              else:
+                  print(f"❌ Query endpoint returned {response.status_code}")
+                  sys.exit(1)
+          except Exception as e:
+              print(f"❌ Query endpoint test failed: {e}")
+              sys.exit(1)
+        shell: python
+
+      - name: Test Kappa validation endpoint
+        run: |
+          import httpx
+          import sys
+
+          try:
+              client = httpx.Client(timeout=10.0)
+              response = client.post(
+                  "http://127.0.0.1:8000/api/kappa/validate",
+                  json={"statement": "Test statement", "modes": ["cto"]}
+              )
+              print(f"Status Code: {response.status_code}")
+
+              if response.status_code in [200, 422]:
+                  print("✅ Kappa validation endpoint PASSED")
+                  sys.exit(0)
+              else:
+                  print(f"❌ Validation endpoint returned {response.status_code}")
+                  sys.exit(1)
+          except Exception as e:
+              print(f"❌ Validation endpoint test failed: {e}")
+              sys.exit(1)
+        shell: python
+
+      - name: Upload server logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: kappa-server-logs
+          path: server.log
+          retention-days: 7
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: health-check
+    if: always()
+    steps:
+      - name: Health check status
+        run: |
+          if [ "${{ needs.health-check.result }}" == "success" ]; then
+            echo "✅ Kappa Health Check PASSED"
+          else
+            echo "❌ Kappa Health Check FAILED"
+          fi

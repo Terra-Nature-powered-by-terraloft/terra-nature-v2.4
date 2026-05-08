@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query, HTTPException, UploadFile, File, Header
+from fastapi import APIRouter, Query, Path, HTTPException, UploadFile, File, Header
 from datetime import datetime
 import json
 
@@ -198,10 +198,10 @@ async def validate(request: ValidationRequest):
         # Log validation
         audit_logger.log_validation(
             statement=request.statement,
-            mode=request.modes[0] if request.modes else "all",
+            modes=request.modes if request.modes else ["all"],
             result={
                 "approved": validation_result["overall_approved"],
-                "level": validation_result["validation_level"]
+                "level": validation_result.get("approval_level", "unknown")
             },
             user=request.user
         )
@@ -286,7 +286,7 @@ async def save_memory(request: MemorySaveRequest):
         raise HTTPException(status_code=500, detail=f"Failed to save to memory: {str(e)}")
 
 @router.get("/memory/{key}", response_model=MemoryResponse)
-async def get_memory(key: str = Query(..., min_length=1)):
+async def get_memory(key: str = Path(..., min_length=1)):
     """Retrieve data from project memory"""
 
     logger.info("memory_retrieve", key=key)
@@ -356,7 +356,12 @@ async def get_audit_log(limit: int = Query(100, ge=1, le=1000)):
         with open(config.audit_path, "r") as f:
             for line in f.readlines()[-limit:]:
                 if line.strip():
-                    entries.append(AuditLogEntry(**json.loads(line)))
+                    try:
+                        entries.append(AuditLogEntry(**json.loads(line)))
+                    except Exception:
+                        # Skip invalid audit entries
+                        logger.debug("invalid_audit_entry")
+                        pass
     except FileNotFoundError:
         logger.info("audit_log_not_yet_created")
 

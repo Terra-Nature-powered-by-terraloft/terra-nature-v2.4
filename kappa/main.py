@@ -18,9 +18,9 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import json
 
-from config import config
-from utils.logging import logger, setup_logging
-from api.routes import router as kappa_router
+from .config import config
+from .utils.logging import logger, setup_logging
+from .api.routes import router as kappa_router
 
 # Initialize logging
 setup_logging()
