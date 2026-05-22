@@ -29,6 +29,7 @@ export function Navigation() {
       <div className="nav-inner">
         <a href="#" className="nav-logo">
           <span className="gradient-text-terra">Terra Nature</span>
+          <span className="nav-logo-sub">powered by Terraloft</span>
         </a>
         <button
           className="nav-toggle"
@@ -39,11 +40,11 @@ export function Navigation() {
           <span />
         </button>
         <div className={`nav-links ${open ? 'is-open' : ''}`}>
+          <a className="nav-link" href="#solution" onClick={close}>Lösung</a>
           <a className="nav-link" href="#features" onClick={close}>Features</a>
-          <a className="nav-link" href="#impact" onClick={close}>Impact</a>
-          <a className="nav-link" href="#gallery" onClick={close}>Standorte</a>
           <a className="nav-link" href="#team" onClick={close}>Team</a>
           <Link className="nav-link" href="/dashboard" onClick={close}>Dashboard</Link>
+          <a className="btn btn-primary nav-cta" href="#contact" onClick={close}>Kontakt</a>
         </div>
       </div>
     </nav>

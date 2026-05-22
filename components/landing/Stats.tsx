@@ -9,18 +9,19 @@ interface StatProps {
   decimals?: number;
   suffix?: string;
   label: string;
+  trend?: string;
   start: boolean;
 }
 
-function Stat({ value, decimals = 0, suffix = '', label, start }: StatProps) {
+function Stat({ value, decimals = 0, suffix = '', label, trend, start }: StatProps) {
   const v = useCounter(value, { start, decimals, duration: 2500 });
-  // German formatting: comma as decimal separator, thousands grouping on integers.
   const formatted =
     decimals > 0 ? v.toFixed(decimals).replace('.', ',') : Math.round(v).toLocaleString('de-DE');
   return (
     <div className="stat">
       <div className="stat-value">{formatted}{suffix}</div>
       <div className="stat-label">{label}</div>
+      {trend && <div className="stat-trend">{trend}</div>}
     </div>
   );
 }
@@ -35,19 +36,41 @@ export function Stats() {
       <div className="container">
         <ScrollReveal variant="slide-up">
           <div className="section-header">
-            <div className="section-eyebrow stats-eyebrow">Impact in Zahlen</div>
+            <div className="section-eyebrow stats-eyebrow">Live Impact</div>
             <h2 className="section-title">
-              <span className="gradient-text-neon">Messbare Wirkung.</span>
+              <span className="gradient-text-neon">Messbare Ergebnisse.</span>
             </h2>
-            <p className="section-sub">Live aus unseren Pilotanlagen — aktualisiert pro Minute.</p>
+            <p className="section-sub">
+              Live aus unseren Pilotanlagen — aktualisiert pro Minute.
+            </p>
           </div>
         </ScrollReveal>
 
-        <div ref={ref} className="stats-grid">
-          <Stat value={12.8} decimals={1} suffix=" MWh/t" label="Abwärme rückgewonnen" start={revealed} />
-          <Stat value={2.46} decimals={2} suffix=" kt" label="CO₂ vermieden" start={revealed} />
-          <Stat value={2.31} decimals={2} suffix=" MWh/t" label="Energieeffizienz" start={revealed} />
-          <Stat value={99.9} decimals={1} suffix=" %" label="Systemverfügbarkeit" start={revealed} />
+        <div ref={ref} className="stats-grid stats-grid--triple">
+          <Stat
+            value={12.8}
+            decimals={1}
+            suffix=" MWh/t"
+            label="Waste Heat Recovered"
+            trend="↑ 6,2 %"
+            start={revealed}
+          />
+          <Stat
+            value={2.46}
+            decimals={2}
+            suffix=" kt"
+            label="CO₂ Avoided"
+            trend="↑ 6,7 %"
+            start={revealed}
+          />
+          <Stat
+            value={2.31}
+            decimals={2}
+            suffix=" MWh/t"
+            label="Energy Efficiency"
+            trend="↑ 5,4 %"
+            start={revealed}
+          />
         </div>
       </div>
     </section>

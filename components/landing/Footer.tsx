@@ -11,32 +11,40 @@ export function Footer() {
         <div className="footer-grid">
           <ScrollReveal variant="slide-up" className="footer-brand">
             <h3><span className="gradient-text-terra">Terra Nature</span></h3>
-            <p>Turning waste heat into measurable impact.</p>
-            <p className="footer-meta">Rosenheim · Bayern · Europa</p>
+            <p>Deep-Tech for Climate &amp; Industry.</p>
+            <div className="footer-social">
+              <a href="https://linkedin.com/in/terranature" className="footer-link" aria-label="LinkedIn">LinkedIn</a>
+              <a href="https://terranature.io" className="footer-link" aria-label="Website">Website</a>
+            </div>
           </ScrollReveal>
           <ScrollReveal variant="slide-up" delay={100} className="footer-col">
-            <h4>Produkt</h4>
+            <h4>Navigation</h4>
+            <a href="#solution" className="footer-link">Lösung</a>
             <a href="#features" className="footer-link">Features</a>
-            <a href="#impact" className="footer-link">Impact</a>
+            <a href="#team" className="footer-link">Team</a>
+            <a href="#contact" className="footer-link">Kontakt</a>
             <Link href="/dashboard" className="footer-link">Dashboard</Link>
           </ScrollReveal>
           <ScrollReveal variant="slide-up" delay={200} className="footer-col">
-            <h4>Ressourcen</h4>
-            <a href="#gallery" className="footer-link">Standorte</a>
-            <a href="/api/export?format=csv&minutes=1440" className="footer-link">CSV Export</a>
-            <a href="/api/export?format=jsonl&minutes=1440" className="footer-link">JSONL Export</a>
+            <h4>Kontakt</h4>
+            <p className="footer-meta">Rosenheim · Bayern · Europa</p>
+            <a href="mailto:eren@terranature.io" className="footer-link">eren@terranature.io</a>
+            <a href="tel:+4915221456897" className="footer-link">+49 152 214 56 897</a>
+            <a href="https://linkedin.com/in/terranature" className="footer-link">linkedin.com/in/terranature</a>
           </ScrollReveal>
           <ScrollReveal variant="slide-up" delay={300} className="footer-col">
-            <h4>Kontakt</h4>
-            <a href="https://terranature.io" className="footer-link">terranature.io</a>
-            <a href="https://linkedin.com/company/terranature" className="footer-link">LinkedIn</a>
-            <a href="#team" className="footer-link">Team</a>
+            <h4>Rechtliches</h4>
+            <a href="#" className="footer-link">Datenschutz</a>
+            <a href="#" className="footer-link">Impressum</a>
+            <a href="#" className="footer-link">AGB</a>
           </ScrollReveal>
         </div>
         <ScrollReveal variant="fade-in" delay={200}>
           <div className="footer-bottom">
-            <span>© {year} Terra Nature · powered by Terraloft</span>
-            <span>v2.4</span>
+            <span>© {year} Terra Nature GmbH · Alle Rechte vorbehalten.</span>
+            <span className="footer-powered">
+              Powered by <span className="terra-accent">Terraloft</span>
+            </span>
           </div>
         </ScrollReveal>
       </div>

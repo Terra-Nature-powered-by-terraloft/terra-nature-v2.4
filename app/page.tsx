@@ -1,9 +1,13 @@
 import { Navigation } from '@/components/landing/Navigation';
 import { Hero } from '@/components/landing/Hero';
+import { ProblemSolution } from '@/components/landing/ProblemSolution';
 import { Features } from '@/components/landing/Features';
+import { BrandPillars } from '@/components/landing/BrandPillars';
 import { Stats } from '@/components/landing/Stats';
-import { Gallery } from '@/components/landing/Gallery';
+import { ProcessFlow } from '@/components/landing/ProcessFlow';
 import { Team } from '@/components/landing/Team';
+import { UseCases } from '@/components/landing/UseCases';
+import { DashboardPreview } from '@/components/landing/DashboardPreview';
 import { CTA } from '@/components/landing/CTA';
 import { Footer } from '@/components/landing/Footer';
 
@@ -13,10 +17,14 @@ export default function Home() {
       <Navigation />
       <main>
         <Hero />
+        <ProblemSolution />
         <Features />
+        <BrandPillars />
         <Stats />
-        <Gallery />
+        <ProcessFlow />
         <Team />
+        <UseCases />
+        <DashboardPreview />
         <CTA />
       </main>
       <Footer />
