@@ -10,7 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def run_node_tests() -> None:
-    subprocess.run(["node", "--test", "tests/test_ws_demo_server_js.js"], check=True, cwd=ROOT)
+    js_tests = sorted(str(file_path.relative_to(ROOT)) for file_path in (ROOT / "tests").glob("*.js"))
+    subprocess.run(["node", "--test", *js_tests], check=True, cwd=ROOT)
 
 
 def run_py_tests() -> None:
