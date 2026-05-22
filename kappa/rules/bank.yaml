@@ -1,0 +1,44 @@
+# Bank / Creditworthiness Expert Rules
+# Validates financial statements according to §18 KWG and banking standards
+
+name: Bank Expert
+description: "Bankfähigkeit validation (§18 KWG, financial soundness)"
+priority: 3
+
+checks:
+  - name: "Financial Data Completeness"
+    keywords: ["CAPEX", "OPEX", "Cashflow", "ROI", "Rendite", "Finanzierung"]
+    rules:
+      - "CAPEX: Detailbudget erforderlich (Hardware, Installation, Warranty)"
+      - "OPEX: Jahresbetriebskosten mit Kostentreibern"
+      - "Cashflow-Projektion über 5-10 Jahre erforderlich"
+      - "Break-even-Punkt berechnet und dokumentiert"
+
+  - name: "Creditworthiness"
+    keywords: ["Kreditwürdigkeit", "Rating", "Sicherheit", "Liquidität"]
+    rules:
+      - "Gründer-Track-Record oder Co-Gründer mit Industrieerfahrung"
+      - "Equity-Quote mindestens 20-30% beim Leverage >70%"
+      - "Sicherheitenmasse dokumentiert (Immobilien, IP, etc.)"
+
+  - name: "Market & Revenue Assumptions"
+    keywords: ["Markt", "Umsatz", "Preis", "Nachfrage", "Kunden"]
+    rules:
+      - "TAM (Total Addressable Market) basierend auf Marktstudie"
+      - "Kundenvalidierung durch LOI (Letter of Intent) oder Pilot"
+      - "Preismodell rational begründet (Benchmarks, Kostenbasis)"
+      - "Konkurrenzanalyse dokumentiert"
+
+  - name: "Risk Factors"
+    keywords: ["Risiko", "Unsicherheit", "Abhängigkeit", "Sensitivität"]
+    rules:
+      - "Technology Risk: TRL und Mitigationen"
+      - "Market Risk: Szenarien (Best/Base/Worst Case)"
+      - "Regulatory Risk: Förderwegfall, EnEfG-Änderung"
+      - "Partner Dependency: Single-Point-of-Failure vermeiden"
+
+approval_logic: |
+  IF financial data incomplete THEN requires_review
+  IF cashflow positive nach 5 Jahren AND ROI >15% THEN conditional approval
+  IF gründer-track-record strong AND market validated THEN approved
+  ELSE THEN conditional approval with conditions

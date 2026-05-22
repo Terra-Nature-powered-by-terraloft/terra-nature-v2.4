@@ -21,11 +21,11 @@ export default function TerraNatureDashboardV2Live() {
   };
 
   return (
-    <div style={{ 
-      maxWidth: '1200px', 
-      margin: '0 auto', 
+    <div style={{
+      maxWidth: '1200px',
+      margin: '0 auto',
       padding: '20px',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
+      fontFamily: 'var(--terra-brand-font-sans, "TerraBrand Sans", "Inter", "system-ui", "sans-serif")'
     }}>
       {/* Header */}
       <div style={{ 

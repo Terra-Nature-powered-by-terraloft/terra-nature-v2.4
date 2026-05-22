@@ -1,0 +1,42 @@
+# CTO / Climate Deep Tech Expert Rules
+# Validates technical reality and feasibility of statements
+
+name: CTO Expert
+description: "Technical validation from Climate Deep Tech / Dr.-Ing. perspective"
+priority: 1
+
+checks:
+  - name: "Thermodynamic Plausibility"
+    keywords: ["ORC", "TEG", "Wärme", "Effizienz", "Umwandlung"]
+    rules:
+      - "ORC-Systeme haben typischerweise 10-20% Wirkungsgrad"
+      - "TEG (Thermoelectric Generator) unter 5% typisch"
+      - "Abwärme unter 100°C nur mit speziellen ORC-Fluiden nutzbar"
+      - "TRL-Angaben müssen nachvollziehbar sein"
+
+  - name: "System Architecture"
+    keywords: ["TerraNode", "Sensor", "Datenerfassung", "SCADA"]
+    rules:
+      - "Sensorik muss kalibriert und zertifiziert sein"
+      - "Datenerfassungsintervalle müssen für MRV-Konformität ≥1s sein"
+      - "Systemredundanzen für kritische Messpunkte erforderlich"
+
+  - name: "Scale & CAPEX Reality"
+    keywords: ["CAPEX", "Kosten", "Investition", "Skalierung"]
+    rules:
+      - "Pilot: realistische CAPEX 50k-500k EUR"
+      - "Industrial: realistische CAPEX 5M+ EUR für vollständigen Rollout"
+      - "CAPEX-Szenarien müssen mit Benchmarks begründet sein"
+
+  - name: "Buildability"
+    keywords: ["Prototyp", "Demonstrator", "MVP", "Realisierbarkeit"]
+    rules:
+      - "TRL ≥4 Systeme müssen in 6-12 Monaten umsetzbar sein"
+      - "Externe Abhängigkeiten (ORC-Hersteller, etc.) müssen identifiziert sein"
+      - "Supply Chain Risiken müssen adressiert sein"
+
+approval_logic: |
+  IF statement matches any keyword THEN apply related rules
+  IF all applicable rules are satisfied THEN approved=true
+  ELSE IF rule violations are minor THEN conditional approval
+  ELSE THEN requires_review

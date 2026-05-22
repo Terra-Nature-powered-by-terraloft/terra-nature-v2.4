@@ -1,0 +1,12 @@
+# Kappa Runtime Data (NOT in Git)
+*.db
+*.sqlite
+*.sqlite3
+*.jsonld
+*.jsonl
+audit.log
+memory.json
+kb.json
+
+# Keep directory structure
+!.gitignore
