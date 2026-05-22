@@ -9,9 +9,12 @@ export function CTA() {
       <div className="container">
         <ScrollReveal variant="zoom-in">
           <div className="cta-banner">
-            <h2>Ready to see your site live?</h2>
-            <p>Open the dashboard and start streaming metrics in under a minute.</p>
-            <Link href="/dashboard" className="btn">Open dashboard →</Link>
+            <h2>Bereit für die Zukunft?</h2>
+            <p>
+              Treten Sie Terra Nature bei und transformieren Sie Ihre Industrie — von Abwärme zu
+              messbarem Impact.
+            </p>
+            <Link href="/dashboard" className="btn">Dashboard öffnen →</Link>
           </div>
         </ScrollReveal>
       </div>

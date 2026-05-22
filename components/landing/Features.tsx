@@ -3,12 +3,26 @@
 import { ScrollReveal } from './ScrollReveal';
 
 const FEATURES = [
-  { icon: '⚡', title: 'Live metrics', desc: 'WebSocket-streamed energy, heat, and power readings with sub-second resolution.' },
-  { icon: '🌿', title: 'Nature-aware', desc: 'Designed for sites where ecology and efficiency are the same goal.' },
-  { icon: '📈', title: 'Trend visibility', desc: '24-hour rollups, comparative baselines, and anomaly hints, all in one view.' },
-  { icon: '📤', title: 'Export ready', desc: 'CSV or JSONL exports for the last 24 hours, integrated with your BI stack.' },
-  { icon: '🔒', title: 'Secure by default', desc: 'Encrypted transports, scoped credentials, and audit trails out of the box.' },
-  { icon: '🛰️', title: 'Multi-device', desc: 'Aggregate readings across distributed Terraloft units in a single canvas.' },
+  {
+    icon: '🔥',
+    title: 'Abwärme nutzbar machen',
+    desc: 'Industrielle Abwärme, die heute verloren geht, wird zu Strom, Wärme und Nachweis.',
+  },
+  {
+    icon: '⚡',
+    title: 'Energieeffizienz steigern',
+    desc: 'Wir verbinden Energieumwandlung, Wärmerückführung und MRV-Nachweise in einem System.',
+  },
+  {
+    icon: '📊',
+    title: 'Digitale Nachweise schaffen',
+    desc: 'Auditfähige Daten und transparente Wirkung — jederzeit nachvollziehbar.',
+  },
+  {
+    icon: '🛡️',
+    title: 'Vertrauen & Wirkung nachweisen',
+    desc: 'Verifikation und Transparenz für messbaren Impact im industriellen Maßstab.',
+  },
 ];
 
 export function Features() {
@@ -17,12 +31,12 @@ export function Features() {
       <div className="container">
         <ScrollReveal variant="slide-up">
           <div className="section-header">
-            <div className="section-eyebrow">What&apos;s inside</div>
+            <div className="section-eyebrow">Was wir tun</div>
             <h2 className="section-title">
-              Built for sites where <span className="gradient-text-terra">every watt counts</span>.
+              Vier Bausteine. <span className="gradient-text-terra">Ein integriertes System.</span>
             </h2>
             <p className="section-sub">
-              Six capabilities that turn raw telemetry into decisions you can defend.
+              Von der Abwärme bis zum auditfähigen Nachweis — Terra Nature schließt die Kette.
             </p>
           </div>
         </ScrollReveal>

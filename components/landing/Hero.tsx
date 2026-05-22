@@ -28,26 +28,28 @@ export function Hero() {
 
       <div className="hero-content">
         <ScrollReveal variant="fade-in">
-          <span className="hero-eyebrow">Powered by Terraloft · v2.4</span>
+          <span className="hero-eyebrow">Deep-Tech for Climate &amp; Industry</span>
         </ScrollReveal>
         <ScrollReveal variant="slide-up" delay={120}>
           <h1>
-            Real-time energy intelligence,<br />
-            <span className="accent gradient-text-terra">grounded in nature.</span>
+            Abwärme zu <span className="gradient-text-terra">Energie</span>.<br />
+            Energie zu <span className="gradient-text-terra">Nachweis</span>.<br />
+            Nachweis zu <span className="gradient-text-terra">Vertrauen</span>.
           </h1>
         </ScrollReveal>
         <ScrollReveal variant="slide-up" delay={260}>
           <p className="hero-sub">
-            Terra Nature streams live metrics from your site so you can see — and act on — every
-            kilowatt-hour, in time to make it matter.
+            Terra Nature wandelt industrielle Abwärme in Strom, nutzbare Wärme und digitale
+            Nachweise um — Infrastruktur für Industrie, Stadtwerke und emissionsintensive
+            Standorte.
           </p>
         </ScrollReveal>
         <ScrollReveal variant="slide-up" delay={400}>
           <div className="hero-cta">
             <Link href="/dashboard" className="btn btn-primary">
-              Open live dashboard <span aria-hidden>→</span>
+              Jetzt starten <span aria-hidden>→</span>
             </Link>
-            <a href="#features" className="btn btn-secondary">See what&apos;s inside</a>
+            <a href="#features" className="btn btn-secondary">Mehr erfahren</a>
           </div>
         </ScrollReveal>
       </div>

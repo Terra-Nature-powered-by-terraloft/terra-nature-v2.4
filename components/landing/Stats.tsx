@@ -14,8 +14,9 @@ interface StatProps {
 
 function Stat({ value, decimals = 0, suffix = '', label, start }: StatProps) {
   const v = useCounter(value, { start, decimals, duration: 2500 });
-  // Integers get locale formatting (e.g. 2,310); decimals keep their precision.
-  const formatted = decimals > 0 ? v.toFixed(decimals) : Math.round(v).toLocaleString();
+  // German formatting: comma as decimal separator, thousands grouping on integers.
+  const formatted =
+    decimals > 0 ? v.toFixed(decimals).replace('.', ',') : Math.round(v).toLocaleString('de-DE');
   return (
     <div className="stat">
       <div className="stat-value">{formatted}{suffix}</div>
@@ -34,17 +35,19 @@ export function Stats() {
       <div className="container">
         <ScrollReveal variant="slide-up">
           <div className="section-header">
-            <div className="section-eyebrow stats-eyebrow">Impact at a glance</div>
-            <h2 className="section-title"><span className="gradient-text-neon">Numbers that move.</span></h2>
-            <p className="section-sub">Live across the Terra Nature fleet, refreshed every minute.</p>
+            <div className="section-eyebrow stats-eyebrow">Impact in Zahlen</div>
+            <h2 className="section-title">
+              <span className="gradient-text-neon">Messbare Wirkung.</span>
+            </h2>
+            <p className="section-sub">Live aus unseren Pilotanlagen — aktualisiert pro Minute.</p>
           </div>
         </ScrollReveal>
 
         <div ref={ref} className="stats-grid">
-          <Stat value={2310} suffix=" kWh" label="Tracked this hour" start={revealed} />
-          <Stat value={97.4} decimals={1} suffix="%" label="Stream uptime" start={revealed} />
-          <Stat value={148} label="Connected devices" start={revealed} />
-          <Stat value={32} suffix=" t CO₂e" label="Avoided this month" start={revealed} />
+          <Stat value={12.8} decimals={1} suffix=" MWh/t" label="Abwärme rückgewonnen" start={revealed} />
+          <Stat value={2.46} decimals={2} suffix=" kt" label="CO₂ vermieden" start={revealed} />
+          <Stat value={2.31} decimals={2} suffix=" MWh/t" label="Energieeffizienz" start={revealed} />
+          <Stat value={99.9} decimals={1} suffix=" %" label="Systemverfügbarkeit" start={revealed} />
         </div>
       </div>
     </section>

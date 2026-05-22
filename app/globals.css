@@ -5,25 +5,31 @@
 :root {
   /* ---- Colour tokens ---- */
   --color-terra-orange: #ff6b35;
+  --color-warm-orange: #ff8c42;
   --color-copper: #cc4e10;
   --color-deep-green: #2d5016;
+  --color-forest-green: #1a3009;
   --color-leaf-green: #4f9d3a;
   --color-electric-cyan: #00d4ff;
   --color-deep-blue: #0066ff;
   --color-vibrant-purple: #6b21ff;
   --color-deep-pink: #ff1493;
   --color-charcoal: #2a2a2a;
+  --color-slate: #1c1f23;
   --color-ink: #1a1a1a;
   --color-stone: #f2f1ee;
-  --color-ash: #d8d7d4;
+  --color-ash: #d8d7d2;
   --color-paper: #ffffff;
 
   /* ---- Gradients ---- */
   --gradient-terra: linear-gradient(135deg, #ff6b35 0%, #2d5016 100%);
   --gradient-terra-reverse: linear-gradient(135deg, #2d5016 0%, #ff6b35 100%);
+  --gradient-orange: linear-gradient(180deg, #ff6b35 0%, #cc4e10 100%);
+  --gradient-neutral: linear-gradient(135deg, #f2f1ee 0%, #d8d7d2 100%);
   --gradient-tech: linear-gradient(180deg, #00d4ff 0%, #0066ff 100%);
   --gradient-neon: linear-gradient(90deg, #6b21ff 0%, #ff1493 50%, #ffffff 100%);
   --gradient-organic: linear-gradient(160deg, #ff6b35 0%, #cc4e10 40%, #4f9d3a 100%);
+  --gradient-organic-wave: linear-gradient(135deg, #ff6b35 0%, #ff8c42 25%, #2d5016 75%, #1a3009 100%);
   --gradient-mesh:
     radial-gradient(at 0% 0%, rgba(255, 107, 53, 0.25) 0%, transparent 50%),
     radial-gradient(at 100% 0%, rgba(107, 33, 255, 0.18) 0%, transparent 50%),
@@ -336,12 +342,11 @@ img { max-width: 100%; display: block; }
   margin-bottom: var(--space-3);
 }
 .hero h1 {
-  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  font-size: clamp(2.25rem, 6.5vw, 5rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   margin-bottom: var(--space-3);
 }
-.hero h1 .accent { display: inline-block; }
 .hero-sub {
   font-size: clamp(1rem, 1.5vw, 1.25rem);
   color: #555;
@@ -501,7 +506,7 @@ img { max-width: 100%; display: block; }
    ========================================================================= */
 
 .stats {
-  background: linear-gradient(180deg, var(--color-ink) 0%, #111 100%);
+  background: linear-gradient(180deg, var(--color-slate) 0%, var(--color-ink) 100%);
   color: white;
   isolation: isolate;
 }
@@ -525,7 +530,7 @@ img { max-width: 100%; display: block; }
 }
 .stat-value {
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-size: clamp(2.25rem, 4.5vw, 3.5rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -580,10 +585,68 @@ img { max-width: 100%; display: block; }
 .gallery-content h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
 .gallery-content p  { font-size: 0.9rem; margin: 0; opacity: 0.85; }
 
-.gallery-bg.one   { background: linear-gradient(135deg, #ff6b35, #cc4e10, #4f9d3a); }
+.gallery-bg.one   { background: var(--gradient-organic-wave); }
 .gallery-bg.two   { background: linear-gradient(160deg, #00d4ff, #0066ff, #2d5016); }
 .gallery-bg.three { background: linear-gradient(200deg, #6b21ff, #ff1493, #ff6b35); }
 .gallery-bg.four  { background: linear-gradient(180deg, #2d5016, #4f9d3a, #00d4ff); }
+
+/* =========================================================================
+   Team
+   ========================================================================= */
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-3);
+  max-width: 760px;
+  margin: 0 auto;
+}
+.team-member {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(242, 241, 238, 0.85) 100%);
+  border: 1px solid var(--color-ash);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  text-align: center;
+  height: 100%;
+  transition:
+    transform var(--dur-medium) var(--ease-out),
+    box-shadow var(--dur-medium) var(--ease-out);
+  box-shadow: var(--shadow-card);
+}
+.team-member:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+.team-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--gradient-terra);
+  margin: 0 auto var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.team-member h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.team-role {
+  color: var(--color-copper);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin: 0 0 var(--space-1);
+}
+.team-bio {
+  color: #555;
+  font-size: 0.9rem;
+  margin: 0;
+}
 
 /* =========================================================================
    CTA banner
@@ -655,6 +718,11 @@ img { max-width: 100%; display: block; }
   color: white;
   font-size: 1.5rem;
   margin-bottom: var(--space-2);
+}
+.footer-meta {
+  margin-top: var(--space-2);
+  font-size: 0.9rem;
+  opacity: 0.7;
 }
 .footer-col h4 {
   color: white;

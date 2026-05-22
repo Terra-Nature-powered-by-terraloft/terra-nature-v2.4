@@ -11,25 +11,26 @@ export function Footer() {
         <div className="footer-grid">
           <ScrollReveal variant="slide-up" className="footer-brand">
             <h3><span className="gradient-text-terra">Terra Nature</span></h3>
-            <p>Real-time energy intelligence, grounded in nature.</p>
+            <p>Turning waste heat into measurable impact.</p>
+            <p className="footer-meta">Rosenheim · Bayern · Europa</p>
           </ScrollReveal>
           <ScrollReveal variant="slide-up" delay={100} className="footer-col">
-            <h4>Product</h4>
+            <h4>Produkt</h4>
             <a href="#features" className="footer-link">Features</a>
             <a href="#impact" className="footer-link">Impact</a>
             <Link href="/dashboard" className="footer-link">Dashboard</Link>
           </ScrollReveal>
           <ScrollReveal variant="slide-up" delay={200} className="footer-col">
-            <h4>Resources</h4>
-            <a href="#gallery" className="footer-link">Sites</a>
-            <a href="/api/export?format=csv&minutes=1440" className="footer-link">Export CSV</a>
-            <a href="/api/export?format=jsonl&minutes=1440" className="footer-link">Export JSONL</a>
+            <h4>Ressourcen</h4>
+            <a href="#gallery" className="footer-link">Standorte</a>
+            <a href="/api/export?format=csv&minutes=1440" className="footer-link">CSV Export</a>
+            <a href="/api/export?format=jsonl&minutes=1440" className="footer-link">JSONL Export</a>
           </ScrollReveal>
           <ScrollReveal variant="slide-up" delay={300} className="footer-col">
-            <h4>Company</h4>
-            <a href="#" className="footer-link">About</a>
-            <a href="#" className="footer-link">Security</a>
-            <a href="#" className="footer-link">Contact</a>
+            <h4>Kontakt</h4>
+            <a href="https://terranature.io" className="footer-link">terranature.io</a>
+            <a href="https://linkedin.com/company/terranature" className="footer-link">LinkedIn</a>
+            <a href="#team" className="footer-link">Team</a>
           </ScrollReveal>
         </div>
         <ScrollReveal variant="fade-in" delay={200}>

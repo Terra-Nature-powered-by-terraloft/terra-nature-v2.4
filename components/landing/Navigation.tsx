@@ -25,7 +25,7 @@ export function Navigation() {
   const close = () => setOpen(false);
 
   return (
-    <nav className={`nav ${scrolled ? 'is-scrolled' : ''}`} aria-label="Primary">
+    <nav className={`nav ${scrolled ? 'is-scrolled' : ''}`} aria-label="Hauptnavigation">
       <div className="nav-inner">
         <a href="#" className="nav-logo">
           <span className="gradient-text-terra">Terra Nature</span>
@@ -33,7 +33,7 @@ export function Navigation() {
         <button
           className="nav-toggle"
           aria-expanded={open}
-          aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-label={open ? 'Menü schließen' : 'Menü öffnen'}
           onClick={() => setOpen((v) => !v)}
         >
           <span />
@@ -41,7 +41,8 @@ export function Navigation() {
         <div className={`nav-links ${open ? 'is-open' : ''}`}>
           <a className="nav-link" href="#features" onClick={close}>Features</a>
           <a className="nav-link" href="#impact" onClick={close}>Impact</a>
-          <a className="nav-link" href="#gallery" onClick={close}>Gallery</a>
+          <a className="nav-link" href="#gallery" onClick={close}>Standorte</a>
+          <a className="nav-link" href="#team" onClick={close}>Team</a>
           <Link className="nav-link" href="/dashboard" onClick={close}>Dashboard</Link>
         </div>
       </div>

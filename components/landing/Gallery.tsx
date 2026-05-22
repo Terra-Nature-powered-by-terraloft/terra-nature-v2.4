@@ -5,10 +5,10 @@ import { ScrollReveal } from './ScrollReveal';
 import type { AnimationVariant } from '@/lib/animation-config';
 
 const ITEMS = [
-  { variant: 'one',   title: 'Orchard array',   sub: 'South-facing tracker, 4.2 MW peak.' },
-  { variant: 'two',   title: 'Coastal node',    sub: 'Wind + tidal pairing, near-shore.' },
-  { variant: 'three', title: 'Urban heat loop', sub: 'District heat exchange, 12 buildings.' },
-  { variant: 'four',  title: 'Forest mesh',     sub: 'Canopy-aware sensors, low impact.' },
+  { variant: 'one',   title: 'Stahlwerk · Süd',     sub: 'Hochofen-Abwärme, 4,2 MWh/t Recovery.' },
+  { variant: 'two',   title: 'Chemiepark · Ost',    sub: 'Wärmekopplung mit MRV-Verifikation.' },
+  { variant: 'three', title: 'Stadtwerke-Verbund',  sub: 'Distrikt-Wärmenetz, 12 Gebäude.' },
+  { variant: 'four',  title: 'Datacenter-Loop',     sub: 'Rack-Wärmerückgewinnung, 24/7.' },
 ];
 
 function GalleryItem({
@@ -47,9 +47,13 @@ export function Gallery() {
       <div className="container">
         <ScrollReveal variant="slide-up">
           <div className="section-header">
-            <div className="section-eyebrow">Across the network</div>
-            <h2 className="section-title">Four sites. <span className="gradient-text-terra">One canvas.</span></h2>
-            <p className="section-sub">A small sample of the sites streaming into Terra Nature today.</p>
+            <div className="section-eyebrow">Standorte</div>
+            <h2 className="section-title">
+              Vier Pilotanlagen. <span className="gradient-text-terra">Ein Nachweis-Layer.</span>
+            </h2>
+            <p className="section-sub">
+              Eine kleine Auswahl der Standorte, die heute in Terra Nature einspeisen.
+            </p>
           </div>
         </ScrollReveal>
 
