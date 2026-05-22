@@ -16,6 +16,10 @@ eggs/
 .eggs/
 lib/
 lib64/
+
+# EXCEPT: lib/kappa/ is TypeScript, should be committed
+!lib/kappa/
+!lib/kappa/**
 parts/
 sdist/
 var/

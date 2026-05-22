@@ -1,0 +1,242 @@
+# Kappa Expert Validation Rules
+# Phase 5: Multi-perspective expert validation framework
+# Updated: 2026-05-07
+
+expert_perspectives:
+  # 1. Professorale - Academic & Scientific Rigor
+  professorale:
+    name: "Akademische Bewertung"
+    description: "Wissenschaftliche Plausibilität und akademische Standards"
+    validation_criteria:
+      - criterion: "Thermodynamische Grundlagen"
+        checks:
+          - "ORC-Effizienz plausibel (<30%)"
+          - "Energieerhaltung respektiert"
+          - "Reversibilität nicht verletzt"
+      - criterion: "Datenbeschaffenheit"
+        checks:
+          - "Messwerte mit Einheiten angegeben"
+          - "Unsicherheiten berücksichtigt"
+          - "Quellen zitiert"
+      - criterion: "Methodologie"
+        checks:
+          - "Experimentelles Design klar"
+          - "Kontrollvariablen identifiziert"
+          - "Wiederholbarkeit möglich"
+
+  # 2. CTO - Technical Reality & Feasibility
+  cto:
+    name: "Technische Realität (Dr.-Ing.)"
+    description: "Umsetzbarkeit, Ingenieursstandards, Praxis"
+    validation_criteria:
+      - criterion: "Technische Machbarkeit"
+        checks:
+          - "Komponenten verfügbar"
+          - "Integrationspfade klar"
+          - "TRL-Level realistisch"
+      - criterion: "Skalierbarkeit"
+        checks:
+          - "Von 10kW auf 1MW skalierbar"
+          - "Materialengpässe bekannt"
+          - "Kostendegressionslogik plausibel"
+      - criterion: "Wartbarkeit & Zuverlässigkeit"
+        checks:
+          - "MTBF >1000h dokumentiert"
+          - "Verschleißteile austauschbar"
+          - "Diagnosemöglichkeiten vorhanden"
+
+  # 3. MRV - Compliance & Monitoring Capability
+  mrv:
+    name: "MRV-Konformität"
+    description: "Monitoring, Reporting, Verification für regulatorische Anforderungen"
+    validation_criteria:
+      - criterion: "Monitoring-Fähigkeit"
+        checks:
+          - "Messpunkte definiert"
+          - "Sensor-Genauigkeit ±5%"
+          - "Datenlogger vorhanden"
+      - criterion: "Berichtbarkeit"
+        checks:
+          - "EU-ETS / EN ISO Standard kompatibel"
+          - "Audit-Trail nachvollziehbar"
+          - "Daten exportierbar"
+      - criterion: "Verifikation"
+        checks:
+          - "Third-Party Audit möglich"
+          - "Baseline nachweisbar"
+          - "Additionality gegeben"
+
+  # 4. Bank - Financial & Creditworthiness
+  bank:
+    name: "Bankfähigkeit"
+    description: "Finanzierbarkeit, KfW-Standards, Bonitätssicherung"
+    validation_criteria:
+      - criterion: "Finanzierungsplan"
+        checks:
+          - "CAPEX realistisch"
+          - "OPEX nachvollziehbar"
+          - "Eigenkapital ≥20%"
+      - criterion: "Cashflow-Viabilität"
+        checks:
+          - "Payback <8 Jahre"
+          - "IRR >12%"
+          - "Schuldendeckungsquote >1.2"
+      - criterion: "Risikoabsicherung"
+        checks:
+          - "Garantien vorhanden"
+          - "Versicherung möglich"
+          - "Ausstiegsszenario definiert"
+
+  # 5. Funding - Innovation & Grant Eligibility
+  funding:
+    name: "Fördermittel-Eligibilität"
+    description: "Innovativität, EXIST/WIPANO/BayStartUP Kriterien"
+    validation_criteria:
+      - criterion: "Innovativität"
+        checks:
+          - "Stand der Technik überschritten"
+          - "Patentierbar"
+          - "Differenzierung gegenüber Wettbewerb"
+      - criterion: "Marktpotential"
+        checks:
+          - "TAM >€100M"
+          - "Skalierungsplan realistisch"
+          - "Go-to-Market-Strategie klar"
+      - criterion: "Förderrichtlinie-Konformität"
+        checks:
+          - "EXIST: Hochschule beteiligt"
+          - "WIPANO: KMU-anteil"
+          - "BayStartUP: Bayern-Nexus"
+
+  # 6. Industrial - Practical Utility for Operators
+  industrial:
+    name: "Industriekundennutzen"
+    description: "Praktische Anwendbarkeit, ROI für Stadtwerke/MHKW"
+    validation_criteria:
+      - criterion: "Betrieblichkeit"
+        checks:
+          - "Minimal-Personalaufwand"
+          - "Existing Infrastructure nutzbar"
+          - "Standard-Schnittstellen"
+      - criterion: "Wirtschaftlichkeit"
+        checks:
+          - "Kostenersparnis >20%"
+          - "Amortisationsdauer <5 Jahre"
+          - "Service-Kosten transparent"
+      - criterion: "Regulatorische Konformität"
+        checks:
+          - "TA Luft erfüllt"
+          - "BlmSchV Limits einhaltbar"
+          - "Genehmigungsfähig"
+
+  # 7. IP - Intellectual Property & Governance
+  ip:
+    name: "IP & Governance"
+    description: "Schutzrechte, Lizenzen, Governance-Struktur"
+    validation_criteria:
+      - criterion: "Patentschutz"
+        checks:
+          - "Kerninnovation patentierbar"
+          - "Freedom-to-Operate geklärt"
+          - "Lizenzen dokumentiert"
+      - criterion: "Governance-Struktur"
+        checks:
+          - "Eigentumsanteile klar"
+          - "Board-Struktur definiert"
+          - "Beschlussfähigkeit gegeben"
+      - criterion: "Datenschutz & Sicherheit"
+        checks:
+          - "DSGVO-konform"
+          - "Cybersecurity-Plan vorhanden"
+          - "Zugriffskontrolle dokumentiert"
+
+  # 8. Communication - Message Appropriateness
+  communication:
+    name: "Kommunikationseignung"
+    description: "Verständlichkeit, Marketing-Tauglichkeit, Glaubwürdigkeit"
+    validation_criteria:
+      - criterion: "Verständlichkeit"
+        checks:
+          - "Für Nicht-Techniker nachvollziehbar"
+          - "Metaphern treffend"
+          - "Jargon minimiert"
+      - criterion: "Glaubwürdigkeit"
+        checks:
+          - "Keine unrealistischen Versprechungen"
+          - "Risiken nicht verschwiegen"
+          - "Quellen transparent"
+      - criterion: "Marketing-Resonanz"
+        checks:
+          - "ESG-Alignment"
+          - "Storytelling-Potential"
+          - "Visuelle Kommunizierbarkeit"
+
+  # 9. Business - Market & Growth Potential
+  business:
+    name: "Business Development"
+    description: "Marktpotential, Wachstumschancen, Strategische Positionierung"
+    validation_criteria:
+      - criterion: "Marktgröße"
+        checks:
+          - "TAM >€500M 2030"
+          - "SAM >€50M"
+          - "SOM >€1M Jahr 1"
+      - criterion: "Wettbewerbsposition"
+        checks:
+          - "Unique Value Proposition klar"
+          - "Moat vorhanden"
+          - "Competitive Advantage >2 Jahre"
+      - criterion: "Skalierungspfad"
+        checks:
+          - "Pilot → MVP → Scale Roadmap"
+          - "Unit Economics positiv"
+          - "Expansion-Märkte identifiziert"
+
+# Default approval thresholds
+approval_thresholds:
+  approved: 0.8  # ≥80% experts approve
+  conditional: 0.5  # 50-79% approve → requires conditions
+  requires_review: 0.0  # <50% approve → escalation needed
+
+# Common validation patterns
+validation_patterns:
+  efficiency_claim:
+    regex: ".*effizienz.*([0-9]+).*%.*"
+    max_value: 100
+    typical_range: [5, 35]
+    expert_check: "cto"
+
+  co2_claim:
+    regex: ".*co[2₂].*([0-9.]+).*t.*"
+    units: ["t", "kg", "g"]
+    expert_check: "mrv"
+
+  financial_claim:
+    regex: ".*cost|capex|opex|revenue.*([0-9.]+).*€.*"
+    expert_check: "bank"
+
+  timeline_claim:
+    regex: ".*([0-9]+).*jahr|monat|woche.*"
+    expert_check: ["funding", "business"]
+
+# Conditional approval requirements
+conditional_requirements:
+  - condition: "Technical claim without test data"
+    requirement: "Provide lab test results or simulation"
+    expert: "cto"
+
+  - condition: "Financial projection >€1M"
+    requirement: "Audited by Big4 or Big5"
+    expert: "bank"
+
+  - condition: "MRV-critical measurement"
+    requirement: "Third-party calibration certificate required"
+    expert: "mrv"
+
+  - condition: "Patent claim without filing"
+    requirement: "File priority application within 30 days"
+    expert: "ip"
+
+  - condition: "Market size claim >€100M"
+    requirement: "Reference top-3 market research reports"
+    expert: "business"

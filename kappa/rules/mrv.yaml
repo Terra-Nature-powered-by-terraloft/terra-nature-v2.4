@@ -1,0 +1,42 @@
+# MRV / Compliance Expert Rules
+# Validates Monitoring, Reporting, Verification compliance
+
+name: MRV Expert
+description: "MRV Compliance validation (Monitoring, Reporting, Verification)"
+priority: 2
+
+checks:
+  - name: "Data Completeness"
+    keywords: ["Daten", "Messung", "Erfassung", "Monitoring"]
+    rules:
+      - "Alle MRV-Daten müssen Timestamp (ISO 8601) enthalten"
+      - "Messwert + Einheit + Unsicherheit erforderlich"
+      - "Datenquelle muss dokumentiert sein"
+      - "Kalibrierinformation erforderlich"
+
+  - name: "Audit Trail"
+    keywords: ["Audit", "Protokoll", "Nachvollziehbarkeit", "Transparenz"]
+    rules:
+      - "Alle Datenpunkte müssen in Audit-Log verfügbar sein"
+      - "Änderungen müssen zeitgestempelt dokumentiert sein"
+      - "Unterschrift / Genehmigung für kritische Daten erforderlich"
+
+  - name: "Regulatory Alignment"
+    keywords: ["EnEfG", "EU-ETS", "Regulatorisch", "Konformität"]
+    rules:
+      - "EnEfG (Energieeffizienzgesetz): Berichtspflicht für Energieverbrauch ≥100 MWh/a"
+      - "EU-ETS: Quotenkonforme Berechnung erforderlich"
+      - "CSRD (Corporate Sustainability Reporting): scope 1, 2, 3 Emissionen"
+
+  - name: "Third-Party Verification"
+    keywords: ["Prüfung", "Verifikation", "Externe", "Auditor"]
+    rules:
+      - "Externe Verifikation mindestens jährlich empfohlen"
+      - "Verifikator sollte akkreditiert sein (ISO 14065)"
+      - "Verifikationsbericht muss dokumentiert werden"
+
+approval_logic: |
+  IF statement claims MRV compliance THEN check all data completeness rules
+  IF timestamp + unit + source present THEN partial approval
+  IF full audit trail exists THEN conditional approval
+  IF external verification documented THEN full approval
