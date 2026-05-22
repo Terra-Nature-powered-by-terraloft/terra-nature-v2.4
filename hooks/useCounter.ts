@@ -1,21 +1,24 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import gsap from 'gsap';
 import { usePrefersReducedMotion } from './usePrefersReducedMotion';
 
 interface Options {
+  // Duration in SECONDS (GSAP convention, not milliseconds).
   duration?: number;
   start?: boolean;
   decimals?: number;
 }
 
-// Eases a number from 0 → target over `duration` ms once `start` flips true.
-// Uses easeOutQuad so it reaches near-final quickly then settles.
+// Eases a number from 0 → target via gsap.to + onUpdate. We tween a plain
+// object, then push each frame's value into React state so the display
+// re-renders. Cleaner than rolling our own requestAnimationFrame loop and
+// gets us free easing curves.
 export function useCounter(target: number, options: Options = {}) {
-  const { duration = 2500, start = true, decimals = 0 } = options;
+  const { duration = 2.5, start = true, decimals = 0 } = options;
   const [value, setValue] = useState(0);
   const prefersReduced = usePrefersReducedMotion();
-  const startTime = useRef<number | null>(null);
 
   useEffect(() => {
     if (!start) return;
@@ -24,20 +27,19 @@ export function useCounter(target: number, options: Options = {}) {
       return;
     }
 
-    let frame = 0;
-    startTime.current = null;
+    const obj = { v: 0 };
+    const tween = gsap.to(obj, {
+      v: target,
+      duration,
+      ease: 'power2.out',
+      onUpdate: () => {
+        setValue(Number(obj.v.toFixed(decimals)));
+      },
+    });
 
-    const step = (now: number) => {
-      if (startTime.current === null) startTime.current = now;
-      const elapsed = now - startTime.current;
-      const t = Math.min(elapsed / duration, 1);
-      const eased = 1 - (1 - t) * (1 - t); // easeOutQuad
-      setValue(Number((target * eased).toFixed(decimals)));
-      if (t < 1) frame = requestAnimationFrame(step);
+    return () => {
+      tween.kill();
     };
-
-    frame = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(frame);
   }, [target, duration, start, decimals, prefersReduced]);
 
   return value;

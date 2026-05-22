@@ -1,53 +1,50 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { usePrefersReducedMotion } from './usePrefersReducedMotion';
 
-// Per-element scroll parallax. Returns a pixel offset based on the
-// element's distance from viewport center. Apply via translateY.
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+// GSAP-driven parallax. Unlike the old IntersectionObserver version, GSAP
+// owns the transform directly via scrub — React never re-renders on scroll,
+// and the easing has the slight lag that makes the motion feel weighted.
 //
-//   speed < 1   → slower than scroll (background feel)
-//   speed > 1   → faster than scroll (foreground feel)
-//   speed < 0   → moves opposite to scroll direction
+//   speed > 0 → moves down as you scroll past (slower than scroll feel)
+//   speed < 0 → moves up as you scroll past (foreground feel)
 //
-// Parallax is disabled below 768px (it stutters on mobile scroll handoff)
-// and under prefers-reduced-motion.
+// Disabled below 768px (mobile scroll handoff causes jitter) and under
+// prefers-reduced-motion.
 export function useParallax<T extends HTMLElement = HTMLDivElement>(speed = 0.3) {
   const ref = useRef<T | null>(null);
-  const [offset, setOffset] = useState(0);
   const prefersReduced = usePrefersReducedMotion();
 
   useEffect(() => {
     if (prefersReduced) return;
     if (typeof window === 'undefined' || window.innerWidth < 768) return;
-
     const node = ref.current;
     if (!node) return;
 
-    let frame = 0;
-    const update = () => {
-      const rect = node.getBoundingClientRect();
-      const viewportH = window.innerHeight;
-      // Distance from viewport center, normalised to roughly [-1, 1].
-      const fromCenter = (rect.top + rect.height / 2 - viewportH / 2) / viewportH;
-      setOffset(fromCenter * 100 * speed);
-      frame = 0;
-    };
+    // yPercent is relative to the element's own height — stable across resizes.
+    const tween = gsap.to(node, {
+      yPercent: speed * 40,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: node,
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 1,
+      },
+    });
 
-    const onScroll = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-      if (frame) cancelAnimationFrame(frame);
+      tween.scrollTrigger?.kill();
+      tween.kill();
     };
   }, [speed, prefersReduced]);
 
-  return { ref, offset };
+  return { ref };
 }

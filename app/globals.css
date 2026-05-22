@@ -49,9 +49,10 @@
   --space-10: 80px;
   --space-12: 96px;
 
-  /* ---- Typography ---- */
-  --font-display: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* ---- Typography ----
+     --font-inter / --font-montserrat are injected by next/font in layout.tsx. */
+  --font-display: var(--font-montserrat), 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: var(--font-inter), system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* ---- Animation tokens ---- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -1117,6 +1118,5 @@ img { max-width: 100%; display: block; }
   }
   .scroll-reveal { opacity: 1; transform: none; filter: none; }
   .hero-bg-blob { transform: none !important; }
-  .gallery-bg { transform: scale(1.1) !important; }
   .platform-frame { transform: none !important; }
 }

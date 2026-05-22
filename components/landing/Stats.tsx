@@ -14,7 +14,8 @@ interface StatProps {
 }
 
 function Stat({ value, decimals = 0, suffix = '', label, trend, start }: StatProps) {
-  const v = useCounter(value, { start, decimals, duration: 2500 });
+  // useCounter takes seconds now (GSAP convention).
+  const v = useCounter(value, { start, decimals, duration: 2.5 });
   const formatted =
     decimals > 0 ? v.toFixed(decimals).replace('.', ',') : Math.round(v).toLocaleString('de-DE');
   return (

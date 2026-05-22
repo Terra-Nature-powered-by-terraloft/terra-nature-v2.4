@@ -1,49 +1,55 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { usePrefersReducedMotion } from './usePrefersReducedMotion';
+
+// Idempotent — GSAP guards internally against double registration.
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface Options {
   threshold?: number;
-  rootMargin?: string;
   once?: boolean;
 }
 
-// IntersectionObserver-based hook that flips `revealed` to true when the
-// target enters the viewport. Drives every fade / slide / zoom reveal.
+// GSAP ScrollTrigger wrapped in a React-friendly hook.
+// `revealed` flips to true when the element enters the viewport — the CSS
+// reveal classes in globals.css watch for the .is-revealed flag this drives.
 export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(
   options: Options = {}
 ) {
-  const { threshold = 0.2, rootMargin = '0px 0px -10% 0px', once = true } = options;
+  const { threshold = 0.2, once = true } = options;
   const ref = useRef<T | null>(null);
   const [revealed, setRevealed] = useState(false);
   const prefersReduced = usePrefersReducedMotion();
 
   useEffect(() => {
-    // Reduced-motion users see the final state immediately.
     if (prefersReduced) {
       setRevealed(true);
       return;
     }
-
     const node = ref.current;
     if (!node) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setRevealed(true);
-          if (once) observer.unobserve(entry.target);
-        } else if (!once) {
-          setRevealed(false);
-        }
-      },
-      { threshold, rootMargin }
-    );
+    // start: "top X%" — fires when the element's top crosses X% down the viewport.
+    // threshold 0.2 → start at 80% (i.e. element 20% into view from the bottom).
+    const startPos = `top ${Math.round((1 - threshold) * 100)}%`;
 
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [threshold, rootMargin, once, prefersReduced]);
+    const trigger = ScrollTrigger.create({
+      trigger: node,
+      start: startPos,
+      once,
+      onEnter: () => setRevealed(true),
+      onLeaveBack: once ? undefined : () => setRevealed(false),
+    });
+
+    return () => {
+      trigger.kill();
+    };
+  }, [threshold, once, prefersReduced]);
 
   return { ref, revealed };
 }
