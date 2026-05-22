@@ -48,37 +48,37 @@ export function useMetrics(): MetricsHookState {
       retryTimeoutRef.current = null;
     }
 
+    const resetRetryState = () => {
+      retryAttemptsRef.current = 0;
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
+    };
+
+    const scheduleReconnect = () => {
+      if (!isComponentMounted.current) {
+        return;
+      }
+
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+
+      const attempt = retryAttemptsRef.current;
+      const delay = Math.min(30000, 1000 * Math.pow(2, attempt));
+      retryAttemptsRef.current = attempt + 1;
+
+      retryTimeoutRef.current = setTimeout(() => {
+        if (isComponentMounted.current) {
+          connectToStream();
+        }
+      }, delay);
+    };
+
     try {
       const eventSource = new EventSource('/api/stream');
       eventSourceRef.current = eventSource;
-
-      const resetRetryState = () => {
-        retryAttemptsRef.current = 0;
-        if (retryTimeoutRef.current) {
-          clearTimeout(retryTimeoutRef.current);
-          retryTimeoutRef.current = null;
-        }
-      };
-
-      const scheduleReconnect = () => {
-        if (!isComponentMounted.current) {
-          return;
-        }
-
-        if (retryTimeoutRef.current) {
-          clearTimeout(retryTimeoutRef.current);
-        }
-
-        const attempt = retryAttemptsRef.current;
-        const delay = Math.min(30000, 1000 * Math.pow(2, attempt));
-        retryAttemptsRef.current = attempt + 1;
-
-        retryTimeoutRef.current = setTimeout(() => {
-          if (isComponentMounted.current) {
-            connectToStream();
-          }
-        }, delay);
-      };
 
       eventSource.onopen = () => {
         if (isComponentMounted.current) {
