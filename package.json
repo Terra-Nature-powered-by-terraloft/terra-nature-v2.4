@@ -21,13 +21,13 @@
     "gsap": "^3.12.5",
     "js-yaml": "^4.1.1",
     "lodash": "^4.18.1",
-    "next": "^14.2.32",
+    "next": "^15.5.18",
     "picomatch": "^2.3.2",
     "postcss": "^8.5.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "typescript": "^5.9.2",
-    "ws": "^8.17.0"
+    "ws": "^8.20.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.0.0",
