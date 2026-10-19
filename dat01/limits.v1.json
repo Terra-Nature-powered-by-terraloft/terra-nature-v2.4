@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "measurements": {
+    "temperature_c": {
+      "min": -40,
+      "max": 1200,
+      "unit": "°C"
+    },
+    "power_kw": {
+      "min": 0,
+      "max": 100000,
+      "unit": "kW"
+    }
+  }
+}
