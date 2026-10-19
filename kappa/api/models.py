@@ -60,7 +60,8 @@ class QueryResponse(BaseModel):
     sources: List[str] = Field(default_factory=list, description="Where response came from")
     timestamp: str
     requires_approval: bool = False
-    approval_level: Literal["approved", "conditional", "requires_review"] = "approved"
+    # Eine Antwort ohne Expertenprüfung ist "not_validated", nie "approved"
+    approval_level: Literal["approved", "conditional", "requires_review", "not_validated"] = "not_validated"
 
 class ValidationResult(BaseModel):
     """Single expert validation result"""
@@ -77,7 +78,7 @@ class ValidationResponse(BaseModel):
     timestamp: str
     results: Dict[str, ValidationResult]
     overall_approved: bool
-    approval_level: Literal["approved", "conditional", "requires_review"]
+    approval_level: Literal["approved", "conditional", "requires_review", "not_validated"]
     user: str
 
 class ErrorResponse(BaseModel):

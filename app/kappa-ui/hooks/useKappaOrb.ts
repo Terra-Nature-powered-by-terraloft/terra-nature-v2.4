@@ -124,7 +124,7 @@ export function useKappaOrb(): UseKappaOrbReturn {
         setState((s) => ({
           ...s,
           validationResult: response,
-          response: `Validierungsergebnis: ${response.overall_approved ? 'GENEHMIGT' : 'ABGELEHNT'}`,
+          response: `Validierungsergebnis: ${response.approval_level === 'not_validated' ? 'NICHT GEPRÜFT' : response.overall_approved ? 'GENEHMIGT' : 'ABGELEHNT'}`,
           isProcessing: false,
         }));
       } catch (err) {

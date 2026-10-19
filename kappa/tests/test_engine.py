@@ -146,7 +146,7 @@ class TestKappaExpertEngine:
 
         assert result is not None
         if "approval_level" in result:
-            assert result["approval_level"] in ["approved", "conditional", "requires_review"]
+            assert result["approval_level"] in ["approved", "conditional", "requires_review", "not_validated"]
 
     @pytest.mark.asyncio
     async def test_error_handling(self, engine):
@@ -187,7 +187,7 @@ class TestExpertValidator:
         )
 
         assert result is not None
-        assert result.approval_level in ["approved", "conditional", "requires_review"]
+        assert result.approval_level in ["approved", "conditional", "requires_review", "not_validated"]
 
     @pytest.mark.asyncio
     async def test_validate_with_bank_mode(self, expert_validator):
@@ -198,7 +198,7 @@ class TestExpertValidator:
         )
 
         assert result is not None
-        assert result.approval_level in ["approved", "conditional", "requires_review"]
+        assert result.approval_level in ["approved", "conditional", "requires_review", "not_validated"]
 
     @pytest.mark.asyncio
     async def test_validate_with_mrv_mode(self, expert_validator):
@@ -209,7 +209,7 @@ class TestExpertValidator:
         )
 
         assert result is not None
-        assert result.approval_level in ["approved", "conditional", "requires_review"]
+        assert result.approval_level in ["approved", "conditional", "requires_review", "not_validated"]
 
     @pytest.mark.asyncio
     async def test_confidence_scores(self, expert_validator):

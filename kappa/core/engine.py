@@ -235,6 +235,7 @@ class KappaExpertEngine:
                 "suggestions": opinion.suggestions,
                 "conditions": opinion.conditions,
                 "reasoning": opinion.reasoning,
+                "validated": opinion.validated,
             }
             for expert_id, opinion in opinions.items()
         }
@@ -242,13 +243,16 @@ class KappaExpertEngine:
     def _create_approval_summary(self, result: ValidationResult) -> str:
         """Create human-readable approval summary"""
         approved_experts = sum(
-            1 for op in result.expert_opinions.values() if op.approved
+            1 for op in result.expert_opinions.values()
+            if op.validated and op.approved is True
         )
         total_experts = len(result.expert_opinions)
 
         summary = f"{approved_experts}/{total_experts} Experten genehmigen | "
 
-        if result.approval_level == "approved":
+        if result.approval_level == "not_validated":
+            summary += "✗ NICHT VALIDIERT – keine Prüfung durchgeführt"
+        elif result.approval_level == "approved":
             summary += "✓ GENEHMIGT"
         elif result.approval_level == "conditional":
             summary += "⚠ BEDINGT GENEHMIGT"
@@ -269,7 +273,8 @@ class KappaExpertEngine:
             approval_level=result.approval_level,
             experts_count=len(result.expert_opinions),
             approved_count=sum(
-                1 for op in result.expert_opinions.values() if op.approved
+                1 for op in result.expert_opinions.values()
+                if op.validated and op.approved is True
             ),
             user=user,
         )

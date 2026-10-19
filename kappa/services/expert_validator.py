@@ -12,6 +12,16 @@ from ..config import config
 from ..utils.logging import logger
 
 
+# Fail-Closed-Grundsatz: Eine Aussage gilt nur dann als "approved", wenn sie
+# tatsächlich von den angefragten Experten geprüft wurde. Fehlt die Prüfung
+# (kein API-Schlüssel, Timeout, Modellfehler, unlesbare Antwort), lautet das
+# Ergebnis "not_validated" bzw. bei Teilausfall "requires_review" – nie "approved".
+NOT_VALIDATED = "not_validated"
+
+# Maximale Wartezeit pro Expertenanfrage in Sekunden
+EXPERT_REQUEST_TIMEOUT_S = 60.0
+
+
 @dataclass
 class ExpertOpinion:
     """Single expert's validation result"""
@@ -23,6 +33,9 @@ class ExpertOpinion:
     suggestions: List[str]
     conditions: List[str]
     reasoning: str
+    # False, wenn keine echte Prüfung stattgefunden hat (Fehler, Timeout,
+    # fehlender API-Schlüssel, unlesbare Modellantwort)
+    validated: bool = True
 
 
 @dataclass
@@ -32,7 +45,7 @@ class ValidationResult:
     timestamp: str
     expert_opinions: Dict[str, ExpertOpinion]
     overall_approved: bool
-    approval_level: str  # "approved", "conditional", "requires_review"
+    approval_level: str  # "approved", "conditional", "requires_review", "not_validated"
     suggestions: List[str]
     conditions: List[str]
 
@@ -105,7 +118,12 @@ class ExpertValidator:
         """
         if not self.available:
             logger.warning("validation_attempted_without_api_key")
-            return self._stub_validation(statement, modes or list(self.experts.keys()), timestamp)
+            return self._not_validated_result(
+                statement,
+                modes or list(self.experts.keys()),
+                timestamp,
+                reason="Kein API-Schlüssel konfiguriert – keine Prüfung durchgeführt",
+            )
 
         # Determine which experts to consult
         expert_modes = modes or list(self.experts.keys())
@@ -123,11 +141,22 @@ class ExpertValidator:
             )
             expert_opinions[expert_id] = opinion
 
-        # Calculate aggregate approval
-        approved_count = sum(1 for op in expert_opinions.values() if op.approved)
+        # Calculate aggregate approval (fail-closed)
+        validated_count = sum(1 for op in expert_opinions.values() if op.validated)
+        approved_count = sum(
+            1 for op in expert_opinions.values() if op.validated and op.approved is True
+        )
         approval_rate = approved_count / len(expert_opinions) if expert_opinions else 0
 
-        if approval_rate >= 0.8:
+        if not expert_opinions or validated_count == 0:
+            # Keine einzige echte Prüfung -> nie freigeben
+            overall_approved = False
+            approval_level = NOT_VALIDATED
+        elif validated_count < len(expert_opinions):
+            # Teilausfall: unvollständig geprüft -> menschliche Prüfung erforderlich
+            overall_approved = False
+            approval_level = "requires_review"
+        elif approval_rate >= 0.8:
             overall_approved = True
             approval_level = "approved"
         elif approval_rate >= 0.5:
@@ -159,6 +188,7 @@ class ExpertValidator:
             approval_level=approval_level,
             approval_rate=approval_rate,
             experts_consulted=len(expert_opinions),
+            experts_validated=validated_count,
         )
 
         return result
@@ -173,7 +203,9 @@ class ExpertValidator:
         try:
             import anthropic
 
-            client = anthropic.Anthropic(api_key=self.api_key)
+            client = anthropic.Anthropic(
+                api_key=self.api_key, timeout=EXPERT_REQUEST_TIMEOUT_S
+            )
 
             prompt = f"""Du bist ein Experte für '{expert_info['name']}':
 {expert_info['description']}
@@ -208,26 +240,30 @@ Sei kritisch und konstruktiv. Identifiziere sowohl Stärken als auch Schwächen.
 
             response_text = message.content[0].text
 
-            # Parse JSON response
+            # Parse JSON response – ohne gültiges JSON gibt es keine Prüfung.
+            # (Früher wurde hier per Textsuche nach "approved" entschieden; dadurch
+            # konnte z.B. "not approved" als Freigabe gewertet werden.)
             json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
-            if json_match:
-                opinion_data = json.loads(json_match.group())
-            else:
-                # Fallback parsing
-                opinion_data = {
-                    "approved": "approved" in response_text.lower(),
-                    "confidence": 0.5,
-                    "feedback": response_text,
-                    "suggestions": [],
-                    "conditions": [],
-                    "reasoning": response_text,
-                }
+            if not json_match:
+                raise ValueError("Modellantwort enthält kein auswertbares JSON")
+            opinion_data = json.loads(json_match.group())
+            if not isinstance(opinion_data, dict):
+                raise ValueError("Modellantwort ist kein JSON-Objekt")
+
+            approved_raw = opinion_data.get("approved")
+            if not isinstance(approved_raw, bool):
+                raise ValueError(
+                    f"Feld 'approved' fehlt oder ist kein Boolean: {approved_raw!r}"
+                )
+
+            confidence = float(opinion_data.get("confidence", 0.0))
+            confidence = min(max(confidence, 0.0), 1.0)
 
             opinion = ExpertOpinion(
                 expert=expert_id,
                 name=expert_info["name"],
-                approved=opinion_data.get("approved", False),
-                confidence=float(opinion_data.get("confidence", 0.5)),
+                approved=approved_raw,
+                confidence=confidence,
                 feedback=opinion_data.get("feedback", ""),
                 suggestions=opinion_data.get("suggestions", []),
                 conditions=opinion_data.get("conditions", []),
@@ -245,25 +281,27 @@ Sei kritisch und konstruktiv. Identifiziere sowohl Stärken als auch Schwächen.
 
         except Exception as e:
             logger.error("expert_opinion_failed", expert=expert_id, error=str(e))
-            # Return stub opinion on error
+            # Fehler, Timeout oder unlesbare Antwort -> nicht validiert, nie freigegeben
             return ExpertOpinion(
                 expert=expert_id,
                 name=expert_info["name"],
                 approved=False,
                 confidence=0.0,
-                feedback=f"[ERROR] Expert validation failed: {str(e)}",
-                suggestions=["Retry validation"],
+                feedback=f"[NICHT VALIDIERT] Expertenprüfung fehlgeschlagen: {str(e)}",
+                suggestions=["Prüfung wiederholen oder manuell prüfen"],
                 conditions=[],
-                reasoning="System error during validation",
+                reasoning="Systemfehler während der Prüfung – keine Bewertung erfolgt",
+                validated=False,
             )
 
-    def _stub_validation(
+    def _not_validated_result(
         self,
         statement: str,
         modes: List[str],
-        timestamp: str
+        timestamp: str,
+        reason: str,
     ) -> ValidationResult:
-        """Return stub validation when API key not available"""
+        """Ergebnis, wenn keine Prüfung möglich war: niemals freigegeben."""
         expert_opinions = {}
 
         for expert_id in modes:
@@ -272,21 +310,22 @@ Sei kritisch und konstruktiv. Identifiziere sowohl Stärken als auch Schwächen.
                 expert_opinions[expert_id] = ExpertOpinion(
                     expert=expert_id,
                     name=expert_info["name"],
-                    approved=True,
+                    approved=False,
                     confidence=0.0,
-                    feedback="[STUB] Expert validation framework ready. Actual rules load in Phase 5.",
-                    suggestions=["Load expert rules from YAML"],
+                    feedback=f"[NICHT VALIDIERT] {reason}",
+                    suggestions=["Prüfung mit konfiguriertem Modellzugang wiederholen oder manuell prüfen"],
                     conditions=[],
-                    reasoning="Stub response - API key not configured",
+                    reasoning=reason,
+                    validated=False,
                 )
 
         return ValidationResult(
             statement=statement,
             timestamp=timestamp,
             expert_opinions=expert_opinions,
-            overall_approved=True,
-            approval_level="approved",
-            suggestions=["Load expert rules from YAML"],
+            overall_approved=False,
+            approval_level=NOT_VALIDATED,
+            suggestions=["Prüfung mit konfiguriertem Modellzugang wiederholen oder manuell prüfen"],
             conditions=[],
         )
 
@@ -301,7 +340,7 @@ Sei kritisch und konstruktiv. Identifiziere sowohl Stärken als auch Schwächen.
 
         expert_info = self.experts[expert_id]
         opinion = await self._get_expert_opinion(expert_id, expert_info, statement)
-        return opinion.approved, opinion.feedback
+        return (opinion.validated and opinion.approved is True), opinion.feedback
 
 
 # Global validator instance

@@ -61,8 +61,11 @@ class TestExpertValidator:
             assert "description" in expert_validator.experts[expert_id]
 
     def test_validate_statement_without_api_key(self, expert_validator):
-        """Test validation returns stub response without API key"""
+        """Ohne API-Schlüssel: Ergebnis 'not_validated', niemals freigegeben"""
         import asyncio
+
+        expert_validator.available = False
+        expert_validator.api_key = None
 
         async def run_test():
             statement = "Der ORC nutzt Abwärme und erzeugt Strom mit 15% Effizienz."
@@ -72,6 +75,9 @@ class TestExpertValidator:
             assert result.statement == statement
             assert hasattr(result, "expert_opinions")
             assert len(result.expert_opinions) > 0
+            assert result.overall_approved is False
+            assert result.approval_level == "not_validated"
+            assert all(not op.approved and not op.validated for op in result.expert_opinions.values())
 
         asyncio.run(run_test())
 
@@ -121,7 +127,7 @@ class TestExpertValidator:
             result = await expert_validator.validate_statement(statement)
 
             # Check approval level is one of the valid options
-            assert result.approval_level in ["approved", "conditional", "requires_review"]
+            assert result.approval_level in ["approved", "conditional", "requires_review", "not_validated"]
 
         asyncio.run(run_test())
 
@@ -236,7 +242,7 @@ class TestExpertEngine:
             assert "validation_level" in result
             assert "overall_approved" in result
             assert "expert_opinions" in result
-            assert result["validation_level"] in ["approved", "conditional", "requires_review"]
+            assert result["validation_level"] in ["approved", "conditional", "requires_review", "not_validated"]
 
         asyncio.run(run_test())
 

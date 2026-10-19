@@ -6,42 +6,46 @@ Tests for Terra-Kappa integration and dashboard embedding
 import pytest
 from pathlib import Path
 
+# Repository-Wurzel relativ zu dieser Datei (tests/kappa/ -> zwei Ebenen hoch),
+# damit die Tests auf jedem Rechner und in der CI laufen.
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
 
 class TestKappaUIIntegration:
     """Tests for Kappa UI integration components"""
 
     def test_kappa_widget_file_exists(self):
         """Test that KappaOrbWidget component exists"""
-        widget_file = Path('/home/user/terra-nature-v2.4/components/KappaOrbWidget.tsx')
+        widget_file = Path(str(REPO_ROOT) + '/components/KappaOrbWidget.tsx')
         assert widget_file.exists(), "KappaOrbWidget.tsx should exist"
 
     def test_kappa_page_file_exists(self):
         """Test that Kappa page exists"""
-        page_file = Path('/home/user/terra-nature-v2.4/app/kappa-ui/page.tsx')
+        page_file = Path(str(REPO_ROOT) + '/app/kappa-ui/page.tsx')
         assert page_file.exists(), "Kappa Orb page should exist"
 
     def test_use_kappa_orb_hook_file_exists(self):
         """Test that useKappaOrb hook exists"""
-        hook_file = Path('/home/user/terra-nature-v2.4/app/kappa-ui/hooks/useKappaOrb.ts')
+        hook_file = Path(str(REPO_ROOT) + '/app/kappa-ui/hooks/useKappaOrb.ts')
         assert hook_file.exists(), "useKappaOrb hook should exist"
 
     def test_dashboard_integration_file_exists(self):
         """Test that dashboard integration exists"""
         integration_file = Path(
-            '/home/user/terra-nature-v2.4/lib/kappa/integration/dashboard-integration.tsx'
+            str(REPO_ROOT) + '/lib/kappa/integration/dashboard-integration.tsx'
         )
         assert integration_file.exists(), "Dashboard integration should exist"
 
     def test_terra_metrics_bridge_file_exists(self):
         """Test that terra metrics bridge exists"""
         bridge_file = Path(
-            '/home/user/terra-nature-v2.4/lib/kappa/integration/terra-metrics-bridge.ts'
+            str(REPO_ROOT) + '/lib/kappa/integration/terra-metrics-bridge.ts'
         )
         assert bridge_file.exists(), "Terra metrics bridge should exist"
 
     def test_widget_content_includes_voice_control(self):
         """Test that widget includes voice control elements"""
-        widget_file = Path('/home/user/terra-nature-v2.4/components/KappaOrbWidget.tsx')
+        widget_file = Path(str(REPO_ROOT) + '/components/KappaOrbWidget.tsx')
         content = widget_file.read_text()
 
         assert 'startListening' in content
@@ -51,7 +55,7 @@ class TestKappaUIIntegration:
 
     def test_widget_content_includes_validation(self):
         """Test that widget includes validation support"""
-        widget_file = Path('/home/user/terra-nature-v2.4/components/KappaOrbWidget.tsx')
+        widget_file = Path(str(REPO_ROOT) + '/components/KappaOrbWidget.tsx')
         content = widget_file.read_text()
 
         assert 'validationResult' in content
@@ -60,7 +64,7 @@ class TestKappaUIIntegration:
 
     def test_page_content_includes_features(self):
         """Test that page includes feature descriptions"""
-        page_file = Path('/home/user/terra-nature-v2.4/app/kappa-ui/page.tsx')
+        page_file = Path(str(REPO_ROOT) + '/app/kappa-ui/page.tsx')
         content = page_file.read_text()
 
         assert 'Sprachbedienung' in content or '🎤' in content
@@ -69,7 +73,7 @@ class TestKappaUIIntegration:
 
     def test_hook_includes_query_method(self):
         """Test that hook includes query method"""
-        hook_file = Path('/home/user/terra-nature-v2.4/app/kappa-ui/hooks/useKappaOrb.ts')
+        hook_file = Path(str(REPO_ROOT) + '/app/kappa-ui/hooks/useKappaOrb.ts')
         content = hook_file.read_text()
 
         assert 'query' in content
@@ -79,7 +83,7 @@ class TestKappaUIIntegration:
     def test_dashboard_integration_includes_floating_widget(self):
         """Test that dashboard integration includes floating widget"""
         integration_file = Path(
-            '/home/user/terra-nature-v2.4/lib/kappa/integration/dashboard-integration.tsx'
+            str(REPO_ROOT) + '/lib/kappa/integration/dashboard-integration.tsx'
         )
         content = integration_file.read_text()
 
@@ -94,11 +98,11 @@ class TestPhase7Completeness:
     def test_all_phase7_files_created(self):
         """Test that all required Phase 7 files are created"""
         required_files = [
-            '/home/user/terra-nature-v2.4/components/KappaOrbWidget.tsx',
-            '/home/user/terra-nature-v2.4/app/kappa-ui/page.tsx',
-            '/home/user/terra-nature-v2.4/app/kappa-ui/hooks/useKappaOrb.ts',
-            '/home/user/terra-nature-v2.4/lib/kappa/integration/terra-metrics-bridge.ts',
-            '/home/user/terra-nature-v2.4/lib/kappa/integration/dashboard-integration.tsx',
+            str(REPO_ROOT) + '/components/KappaOrbWidget.tsx',
+            str(REPO_ROOT) + '/app/kappa-ui/page.tsx',
+            str(REPO_ROOT) + '/app/kappa-ui/hooks/useKappaOrb.ts',
+            str(REPO_ROOT) + '/lib/kappa/integration/terra-metrics-bridge.ts',
+            str(REPO_ROOT) + '/lib/kappa/integration/dashboard-integration.tsx',
         ]
 
         for file_path in required_files:
@@ -108,9 +112,9 @@ class TestPhase7Completeness:
     def test_phase7_components_are_tsx(self):
         """Test that Phase 7 components use TypeScript/TSX"""
         component_files = [
-            '/home/user/terra-nature-v2.4/components/KappaOrbWidget.tsx',
-            '/home/user/terra-nature-v2.4/app/kappa-ui/page.tsx',
-            '/home/user/terra-nature-v2.4/lib/kappa/integration/dashboard-integration.tsx',
+            str(REPO_ROOT) + '/components/KappaOrbWidget.tsx',
+            str(REPO_ROOT) + '/app/kappa-ui/page.tsx',
+            str(REPO_ROOT) + '/lib/kappa/integration/dashboard-integration.tsx',
         ]
 
         for file_path in component_files:
@@ -120,9 +124,9 @@ class TestPhase7Completeness:
     def test_phase7_has_proper_client_directives(self):
         """Test that client components include 'use client' directive"""
         client_components = [
-            '/home/user/terra-nature-v2.4/components/KappaOrbWidget.tsx',
-            '/home/user/terra-nature-v2.4/app/kappa-ui/hooks/useKappaOrb.ts',
-            '/home/user/terra-nature-v2.4/lib/kappa/integration/dashboard-integration.tsx',
+            str(REPO_ROOT) + '/components/KappaOrbWidget.tsx',
+            str(REPO_ROOT) + '/app/kappa-ui/hooks/useKappaOrb.ts',
+            str(REPO_ROOT) + '/lib/kappa/integration/dashboard-integration.tsx',
         ]
 
         for file_path in client_components:

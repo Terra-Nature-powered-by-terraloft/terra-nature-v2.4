@@ -53,7 +53,7 @@ export interface QueryResponse {
   sources: string[];
   timestamp: string;
   requires_approval: boolean;
-  approval_level: "approved" | "conditional" | "requires_review";
+  approval_level: "approved" | "conditional" | "requires_review" | "not_validated";
 }
 
 export interface ValidationResult {
@@ -70,7 +70,7 @@ export interface ValidationResponse {
   timestamp: string;
   results: Record<string, ValidationResult>;
   overall_approved: boolean;
-  approval_level: "approved" | "conditional" | "requires_review";
+  approval_level: "approved" | "conditional" | "requires_review" | "not_validated";
   user: string;
 }
 
