@@ -13,6 +13,9 @@ anthropic>=0.100.0
 # Async
 websockets==12.0
 
+# Security (JWT, importiert von kappa/utils/security.py)
+PyJWT==2.15.1
+
 # Utilities
 python-multipart==0.0.6
 python-dotenv==1.0.0
