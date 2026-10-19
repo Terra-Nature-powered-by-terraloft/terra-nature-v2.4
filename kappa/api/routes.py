@@ -126,7 +126,8 @@ async def query(request: QueryRequest, authorization: str = Header(None)):
         sources=sources,
         timestamp=datetime.utcnow().isoformat() + "Z",
         requires_approval=False,
-        approval_level="approved"
+        # /query führt keine Expertenprüfung durch -> nicht als "approved" kennzeichnen
+        approval_level="not_validated"
     )
 
     # Log the query

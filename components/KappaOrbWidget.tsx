@@ -281,7 +281,11 @@ export default function KappaOrbWidget({
                 <div>
                   <strong>Gesamtstatus:</strong>{' '}
                   <span style={{ color: validationResult.overall_approved ? '#16a34a' : '#dc2626' }}>
-                    {validationResult.overall_approved ? 'GENEHMIGT' : 'ABGELEHNT'}
+                    {validationResult.approval_level === 'not_validated'
+                      ? 'NICHT GEPRÜFT'
+                      : validationResult.overall_approved
+                        ? 'GENEHMIGT'
+                        : 'ABGELEHNT'}
                   </span>
                 </div>
                 <div style={{ marginTop: '4px' }}>
